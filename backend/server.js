@@ -15,6 +15,11 @@ if (missingVars.length > 0) {
   process.exit(1);
 }
 
+// Optional Cloudinary warning (no exit)
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.warn('⚠️  Cloudinary credentials missing – image uploads will fail. Set them if needed.');
+}
+
 // Connect to database with error handling
 let server;
 
