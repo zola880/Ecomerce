@@ -1,48 +1,248 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, Heart, User, Menu, X, ChevronDown, ArrowRight, Zap, Scale, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  ShoppingBag, Search, Heart, User, Menu, X, ChevronDown, 
+  ArrowRight, Zap, Scale, LogOut, ChevronRight, Bell, Settings 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 
-const Navbar = () => {
+// ─────────────────────────────────────────────────────────────
+// 🔹 Sub-Components (for maintainability & performance)
+// ─────────────────────────────────────────────────────────────
+
+const DesktopNavDropdown = memo(({ onHover }) => {
+  const categories = ['Furniture', 'Lighting', 'Decor', 'Lifestyle'];
+  const highlights = [
+    { title: 'New Arrivals 2026', desc: 'View latest release protocol', path: '/deals' },
+    { title: 'Artisan Spotlight', desc: 'Meet the Japanese ceramic masters', path: '/brands' },
+  ];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 8 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.2 }}
+      className="absolute top-full -left-20 w-[600px] pt-6 z-50"
+      onMouseEnter={onHover}
+    >
+      <div className="bg-bg-luxe border border-border-luxe/20 shadow-2xl rounded-[2rem] overflow-hidden grid grid-cols-2">
+        {/* Categories Column */}
+        <div className="p-8 space-y-6 bg-layer-luxe/30">
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Curated Spheres</h4>
+          <nav className="flex flex-col space-y-2" role="menu">
+            {categories.map(cat => (
+              <Link 
+                key={cat} 
+                to={`/products?category=${cat}`} 
+                className="text-lg font-display hover:text-secondary-luxe transition-colors py-1 px-2 rounded-lg hover:bg-layer-luxe/50"
+                role="menuitem"
+              >
+                {cat}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        
+        {/* Highlights Column */}
+        <div className="p-8 space-y-6">
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe">Highlights</h4>
+          <div className="space-y-4">
+            {highlights.map(item => (
+              <Link 
+                key={item.title} 
+                to={item.path} 
+                className="group/item block p-3 rounded-xl hover:bg-layer-luxe/50 transition-colors"
+              >
+                <span className="text-sm font-bold block">{item.title}</span>
+                <span className="text-xs text-text-luxe/50 group-hover/item:text-secondary-luxe transition-colors">
+                  {item.desc}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor = 'bg-primary-luxe' }) => {
+  const content = (
+    <>
+      <Icon size={20} aria-hidden="true" />
+      {badge !== undefined && badge > 0 && (
+        <motion.span 
+          initial={{ scale: 0 }} 
+          animate={{ scale: 1 }} 
+          className={`${badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center`}
+        >
+          {badge > 99 ? '99+' : badge}
+        </motion.span>
+      )}
+      {badge === 'pulse' && (
+        <span className="absolute top-1 right-1 w-2 h-2 bg-secondary-luxe rounded-full animate-pulse" aria-label="New items" />
+      )}
+    </>
+  );
+
+  const commonProps = {
+    className: "p-2.5 hover:bg-layer-luxe rounded-full transition-all relative group focus:outline-none focus:ring-2 focus:ring-primary-luxe/50",
+    'aria-label': label,
+  };
+
+  return href ? (
+    <Link {...commonProps} to={href}>{content}</Link>
+  ) : (
+    <button {...commonProps} onClick={onClick}>{content}</button>
+  );
+});
+
+const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  const menuItems = [
+    { label: 'Profile', path: '/profile', icon: User },
+    { label: 'Orders', path: '/orders', icon: ShoppingBag },
+    { label: 'Wishlist', path: '/wishlist', icon: Heart },
+    ...(user.role === 'admin' ? [{ label: 'Admin', path: '/admin', icon: Settings, highlight: true }] : []),
+  ];
+
+  return (
+    <div className="relative" onMouseLeave={() => setIsOpen(false)}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-2 p-1.5 pl-4 pr-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/20 transition-all border border-border-luxe/10 focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+      >
+        <span className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe hidden sm:inline">
+          {user.name?.split(' ')[0]}
+        </span>
+        <div className="w-8 h-8 bg-gradient-to-br from-primary-luxe to-secondary-luxe text-white rounded-full flex items-center justify-center text-xs font-bold uppercase shadow-lg">
+          {getUserInitials()}
+        </div>
+        <ChevronDown size={12} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 8, scale: 0.98 }} 
+            animate={{ opacity: 1, y: 0, scale: 1 }} 
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-2 w-56 bg-bg-luxe border border-border-luxe/20 rounded-2xl shadow-2xl z-50 overflow-hidden"
+            role="menu"
+          >
+            {menuItems.map((item, idx) => (
+              <Link 
+                key={item.label}
+                to={item.path}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center space-x-3 px-5 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-layer-luxe transition-colors ${
+                  item.highlight ? 'text-secondary-luxe' : 'text-primary-luxe'
+                } ${idx === menuItems.length - 1 && !user.admin ? 'border-b border-border-luxe/20' : ''}`}
+                role="menuitem"
+              >
+                {item.icon && <item.icon size={14} />}
+                <span>{item.label}</span>
+                <ChevronRight size={12} className="ml-auto text-text-luxe/30" />
+              </Link>
+            ))}
+            <button 
+              onClick={() => { onLogout(); setIsOpen(false); }}
+              className="w-full flex items-center space-x-3 px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-red-500 hover:bg-red-50/50 transition-colors rounded-b-2xl"
+              role="menuitem"
+            >
+              <LogOut size={14} />
+              <span>Logout</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// 🔹 Main Navbar Component
+// ─────────────────────────────────────────────────────────────
+
+const Navbar = () => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownHovered, setIsDropdownHovered] = useState(false);
+  
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, wishlist } = useStore();
   const { user, logout } = useAuth();
 
-  // Close mobile menu on window resize (if screen becomes large)
+  // Close menus on route change
+  useEffect(() => {
+    setIsMobileOpen(false);
+    setIsSearchOpen(false);
+  }, [location.pathname]);
+
+  // Scroll detection for navbar styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close mobile menu on large screens
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1280 && isOpen) {
-        setIsOpen(false);
+      if (window.innerWidth >= 1280 && isMobileOpen) {
+        setIsMobileOpen(false);
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isOpen]);
+  }, [isMobileOpen]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+  // Keyboard navigation for mobile menu
+  useEffect(() => {
+    if (isMobileOpen) {
+      const handleKey = (e) => {
+        if (e.key === 'Escape') setIsMobileOpen(false);
+      };
+      document.addEventListener('keydown', handleKey);
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.removeEventListener('keydown', handleKey);
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isMobileOpen]);
+
+  const handleSearch = useCallback((e) => {
+    e?.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
       setSearchQuery('');
     }
-  };
+  }, [searchQuery, navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/');
-    setIsOpen(false);
-  };
+    setIsMobileOpen(false);
+  }, [logout, navigate]);
 
-  const getUserInitials = () => {
+  const getUserInitials = useCallback(() => {
     if (!user?.name) return 'G';
     return user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
+  }, [user?.name]);
 
   const navLinks = [
     { label: 'Deals', path: '/deals', icon: Zap },
@@ -54,152 +254,336 @@ const Navbar = () => {
   const trendingSearches = ['Minimalist Vases', 'Soft Lighting', 'Linen Textures'];
   const curatedResults = ['New Arrivals', 'Clearance Archive', 'Best Sellers'];
 
+  // ─────────────────────────────────────────────────────────
+  // 🔹 Render
+  // ─────────────────────────────────────────────────────────
+
   return (
-    <nav className="sticky top-0 z-50 premium-blur">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="flex justify-between items-center h-16 md:h-20 lg:h-24">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <span className="font-display text-xl md:text-2xl font-bold tracking-tighter text-primary-luxe uppercase">
+    <nav 
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'premium-blur shadow-lg' : 'premium-blur'
+      }`}
+      role="navigation"
+      aria-label="Main navigation"
+    >
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
+          
+          {/* ── Logo ── */}
+          <Link 
+            to="/" 
+            className="flex items-center space-x-2 group focus:outline-none focus:ring-2 focus:ring-primary-luxe/50 rounded-lg p-1"
+            aria-label="Aura Luxe Home"
+          >
+            <span className="font-display text-xl sm:text-2xl font-bold tracking-tighter text-primary-luxe uppercase">
               Aura<span className="text-secondary-luxe"> Luxe</span>
             </span>
           </Link>
 
-          {/* Desktop Nav (xl and up) */}
-          <div className="hidden xl:flex items-center space-x-12">
-            <div className="group relative">
-              <button className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors">
+          {/* ── Desktop Navigation (xl+) ── */}
+          <div className="hidden xl:flex items-center space-x-10">
+            {/* Spheres Dropdown */}
+            <div 
+              className="group relative"
+              onMouseEnter={() => setIsDropdownHovered(true)}
+              onMouseLeave={() => setIsDropdownHovered(false)}
+            >
+              <button 
+                className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors py-2 focus:outline-none focus:ring-2 focus:ring-primary-luxe/50 rounded-lg px-2"
+                aria-haspopup="true"
+                aria-expanded={isDropdownHovered}
+              >
                 <span>Spheres</span>
-                <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-500" />
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-500 ${isDropdownHovered ? 'rotate-180' : ''}`} 
+                />
               </button>
-              <div className="absolute top-full -left-20 w-[600px] mt-0 pt-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-                <div className="bg-bg-luxe border border-border-luxe/20 shadow-2xl rounded-[2rem] overflow-hidden grid grid-cols-2">
-                  <div className="p-10 space-y-8 bg-layer-luxe/30">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Curated Spheres</h4>
-                    <div className="flex flex-col space-y-4">
-                      {['Furniture', 'Lighting', 'Decor', 'Lifestyle'].map(cat => (
-                        <Link key={cat} to={`/products?category=${cat}`} className="text-xl font-display hover:text-secondary-luxe transition-colors">{cat}</Link>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="p-10 space-y-8">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe">Highlights</h4>
-                    <div className="space-y-6">
-                      <Link to="/deals" className="group/item cursor-pointer block">
-                        <span className="text-sm font-bold block">New Arrivals 2026</span>
-                        <span className="text-xs text-text-luxe/40 group-hover/item:text-secondary-luxe transition-colors">View latest release protocol</span>
-                      </Link>
-                      <Link to="/brands" className="group/item cursor-pointer block">
-                        <span className="text-sm font-bold block">Artisan Spotlight</span>
-                        <span className="text-xs text-text-luxe/40 group-hover/item:text-secondary-luxe transition-colors">Meet the Japanese ceramic masters</span>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AnimatePresence>
+                {isDropdownHovered && <DesktopNavDropdown onHover={() => setIsDropdownHovered(true)} />}
+              </AnimatePresence>
             </div>
+
+            {/* Main Nav Links */}
             {navLinks.map(link => (
-              <Link key={link.label} to={link.path} className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors flex items-center space-x-2">
-                {link.icon && <link.icon size={12} />}
+              <Link 
+                key={link.label} 
+                to={link.path} 
+                className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors flex items-center space-x-1.5 py-2 px-1 focus:outline-none focus:ring-2 focus:ring-primary-luxe/50 rounded-lg"
+              >
+                {link.icon && <link.icon size={12} aria-hidden="true" />}
                 <span>{link.label}</span>
               </Link>
             ))}
           </div>
 
-          {/* Actions (icons) */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="p-2 hover:bg-layer-luxe rounded-full transition-colors relative group">
-              <Search size={20} />
-              <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-highlight-luxe rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-            </button>
-            <Link to="/wishlist" className="p-2 hover:bg-layer-luxe rounded-full transition-colors relative">
-              <Heart size={20} />
-              {wishlist.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-secondary-luxe rounded-full animate-pulse"></span>}
-            </Link>
-            <Link to="/cart" className="p-2 hover:bg-layer-luxe rounded-full transition-colors relative flex items-center space-x-2 px-3 group">
-              <ShoppingBag size={20} />
-              {cart.length > 0 && (
-                <span className="bg-primary-luxe text-white text-[9px] font-bold px-2 py-0.5 rounded-full group-hover:bg-secondary-luxe transition-all whitespace-nowrap">
-                  {cart.length}
-                </span>
-              )}
-            </Link>
+          {/* ── Action Buttons ── */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Search Toggle */}
+            <ActionButton 
+              icon={Search} 
+              label="Search" 
+              onClick={() => setIsSearchOpen(!isSearchOpen)} 
+            />
+            
+            {/* Wishlist */}
+            <ActionButton 
+              icon={Heart} 
+              label="Wishlist" 
+              href="/wishlist" 
+              badge={wishlist.length > 0 ? 'pulse' : undefined} 
+            />
+            
+            {/* Cart */}
+            <ActionButton 
+              icon={ShoppingBag} 
+              label="Cart" 
+              href="/cart" 
+              badge={cart.length} 
+            />
+
+            {/* Auth Section */}
             {user ? (
-              <div className="relative group hidden md:block">
-                <button className="flex items-center space-x-2 p-1.5 pl-4 pr-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/20 transition-all border border-border-luxe/10">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe">{user.name?.split(' ')[0]}</span>
-                  <div className="w-8 h-8 bg-primary-luxe text-white rounded-full flex items-center justify-center text-xs font-bold uppercase">{getUserInitials()}</div>
-                </button>
-                <div className="absolute right-0 top-full mt-2 w-48 bg-bg-luxe border border-border-luxe/20 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <Link to="/profile" className="block px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-layer-luxe rounded-t-2xl">Profile</Link>
-                  <Link to="/orders" className="block px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-layer-luxe">Orders</Link>
-                  <Link to="/wishlist" className="block px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-layer-luxe">Wishlist</Link>
-                  {user.role === 'admin' && <Link to="/admin" className="block px-6 py-3 text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:bg-layer-luxe">Admin</Link>}
-                  <button onClick={handleLogout} className="w-full text-left px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 rounded-b-2xl flex items-center space-x-2">
-                    <LogOut size={12} /><span>Logout</span>
-                  </button>
-                </div>
+              <div className="hidden md:block">
+                <UserDropdown 
+                  user={user} 
+                  getUserInitials={getUserInitials} 
+                  onLogout={handleLogout} 
+                />
               </div>
             ) : (
-              <Link to="/auth" className="hidden md:block text-[10px] font-bold uppercase tracking-widest text-primary-luxe px-4 py-2 border border-border-luxe rounded-full hover:bg-primary-luxe hover:text-white transition-all">Sign In</Link>
+              <Link 
+                to="/auth" 
+                className="hidden md:flex items-center text-[10px] font-bold uppercase tracking-widest text-primary-luxe px-4 py-2 border border-border-luxe rounded-full hover:bg-primary-luxe hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+              >
+                Sign In
+              </Link>
             )}
-            {/* Hamburger button - visible on screens < xl */}
-            <button className="xl:hidden p-2 hover:bg-layer-luxe rounded-full" onClick={() => setIsOpen(true)}>
+
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="xl:hidden p-2.5 hover:bg-layer-luxe rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+              onClick={() => setIsMobileOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={isMobileOpen}
+            >
               <Menu size={24} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Search Overlay (same as before, keep as is) */}
+      {/* ── Search Overlay ── */}
       <AnimatePresence>
         {isSearchOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="absolute top-full left-0 w-full bg-bg-luxe border-b border-border-luxe/30 shadow-2xl z-50">
-            <div className="max-w-4xl mx-auto py-12 px-4">
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }} 
+            transition={{ duration: 0.2 }}
+            className="absolute top-full left-0 w-full bg-bg-luxe border-b border-border-luxe/30 shadow-2xl z-40"
+          >
+            <div className="max-w-4xl mx-auto py-8 px-4">
               <form onSubmit={handleSearch} className="flex items-center space-x-4 border-b-2 border-border-luxe/40 pb-4 focus-within:border-primary-luxe transition-colors">
-                <Search className="text-border-luxe" size={24} />
-                <input autoFocus value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search for furniture, lighting, decor..." className="w-full bg-transparent outline-none text-2xl font-display tracking-tight placeholder:text-border-luxe/30" />
-                <button type="submit" className="p-3 bg-primary-luxe text-white rounded-full hover:bg-secondary-luxe transition-all shadow-xl"><ArrowRight size={18} /></button>
+                <Search className="text-border-luxe flex-shrink-0" size={24} aria-hidden="true" />
+                <input 
+                  autoFocus 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  placeholder="Search for furniture, lighting, decor..." 
+                  className="w-full bg-transparent outline-none text-lg sm:text-2xl font-display tracking-tight placeholder:text-border-luxe/40"
+                  aria-label="Search products"
+                />
+                <button 
+                  type="submit" 
+                  className="p-3 bg-primary-luxe text-white rounded-full hover:bg-secondary-luxe transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-luxe"
+                  aria-label="Submit search"
+                >
+                  <ArrowRight size={18} />
+                </button>
               </form>
-              <div className="mt-8 grid grid-cols-2 gap-6">
-                <div><span className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Trending</span><div className="flex flex-col space-y-1 mt-2">{trendingSearches.map(s => <button key={s} onClick={() => { setSearchQuery(s); handleSearch(new Event('submit')); }} className="text-sm text-left hover:text-secondary-luxe">{s}</button>)}</div></div>
-                <div><span className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Quick Links</span><div className="flex flex-col space-y-1 mt-2">{curatedResults.map(s => <button key={s} onClick={() => navigate(`/search?q=${encodeURIComponent(s)}`)} className="text-sm text-left hover:text-secondary-luxe">{s}</button>)}</div></div>
+              
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Trending</span>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {trendingSearches.map(s => (
+                      <button 
+                        key={s} 
+                        onClick={() => { setSearchQuery(s); handleSearch(); }} 
+                        className="text-sm px-3 py-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/30 transition-colors text-left"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Quick Links</span>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {curatedResults.map(s => (
+                      <button 
+                        key={s} 
+                        onClick={() => navigate(`/search?q=${encodeURIComponent(s)}`)} 
+                        className="text-sm px-3 py-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/30 transition-colors text-left"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Drawer (Slide from right) */}
+      {/* ── Mobile Menu Drawer ── */}
       <AnimatePresence>
-        {isOpen && (
+        {isMobileOpen && (
           <>
             {/* Backdrop */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] xl:hidden" onClick={() => setIsOpen(false)} />
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] xl:hidden" 
+              onClick={() => setIsMobileOpen(false)}
+              aria-hidden="true"
+            />
+            
             {/* Drawer */}
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'tween', duration: 0.3 }} className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-bg-luxe z-[70] shadow-2xl xl:hidden flex flex-col overflow-y-auto">
-              <div className="flex justify-between items-center p-6 border-b border-border-luxe/20">
-                <span className="font-display text-2xl font-bold tracking-tighter text-primary-luxe uppercase">Aura<span className="text-secondary-luxe"> Luxe</span></span>
-                <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-layer-luxe rounded-full"><X size={24} /></button>
+            <motion.div 
+              initial={{ x: '100%' }} 
+              animate={{ x: 0 }} 
+              exit={{ x: '100%' }} 
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-bg-luxe z-[70] shadow-2xl xl:hidden flex flex-col safe-area-pb"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile menu"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center p-5 border-b border-border-luxe/20">
+                <span className="font-display text-xl font-bold tracking-tighter text-primary-luxe uppercase">
+                  Aura<span className="text-secondary-luxe"> Luxe</span>
+                </span>
+                <button 
+                  onClick={() => setIsMobileOpen(false)} 
+                  className="p-2 hover:bg-layer-luxe rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                  aria-label="Close menu"
+                >
+                  <X size={24} />
+                </button>
               </div>
-              <div className="flex-1 py-8 px-6 space-y-8">
-                <div className="space-y-4">
-                  {['Products', 'Deals', 'Brands', 'About', 'Help'].map(link => (
-                    <Link key={link} to={`/${link.toLowerCase()}`} className="block text-2xl font-display font-light hover:text-secondary-luxe transition-colors" onClick={() => setIsOpen(false)}>{link}</Link>
-                  ))}
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto py-6 px-5 space-y-8">
+                
+                {/* Search in Mobile */}
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-border-luxe" size={18} aria-hidden="true" />
+                  <input 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                    placeholder="Search..." 
+                    className="w-full pl-11 pr-4 py-3 bg-layer-luxe rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-luxe/50 transition-all"
+                    aria-label="Search in mobile menu"
+                  />
                 </div>
-                <div className="pt-8 border-t border-border-luxe/20 space-y-6">
+
+                {/* Main Navigation */}
+                <nav className="space-y-2" role="menu">
+                  {['Products', 'Deals', 'Brands', 'Comparison', 'About', 'Help'].map((link, idx) => (
+                    <Link 
+                      key={link} 
+                      to={`/${link.toLowerCase() === 'products' ? 'products' : link.toLowerCase()}`} 
+                      className="flex items-center justify-between w-full py-4 px-4 text-lg font-display font-light hover:text-secondary-luxe hover:bg-layer-luxe/50 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                      onClick={() => setIsMobileOpen(false)}
+                      role="menuitem"
+                    >
+                      <span>{link}</span>
+                      <ChevronRight size={18} className="text-text-luxe/40" />
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* Spheres Categories (Mobile) */}
+                <div className="pt-4 border-t border-border-luxe/20">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe mb-4 px-4">Browse Spheres</h4>
+                  <div className="grid grid-cols-2 gap-2 px-4">
+                    {['Furniture', 'Lighting', 'Decor', 'Lifestyle'].map(cat => (
+                      <Link 
+                        key={cat} 
+                        to={`/products?category=${cat}`}
+                        onClick={() => setIsMobileOpen(false)}
+                        className="py-3 px-4 bg-layer-luxe rounded-xl text-sm font-medium text-center hover:bg-border-luxe/30 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                      >
+                        {cat}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* User Section */}
+                <div className="pt-4 border-t border-border-luxe/20 space-y-4">
                   {user ? (
                     <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold uppercase tracking-widest">Hello, {user.name?.split(' ')[0]}</span>
-                        <div className="w-10 h-10 bg-primary-luxe text-white rounded-full flex items-center justify-center font-bold">{getUserInitials()}</div>
+                      <div className="flex items-center justify-between px-4 py-3 bg-layer-luxe rounded-xl">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-primary-luxe to-secondary-luxe text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
+                            {getUserInitials()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">Hello, {user.name?.split(' ')[0]}</p>
+                            <p className="text-xs text-text-luxe/60">{user.email}</p>
+                          </div>
+                        </div>
                       </div>
-                      <button onClick={handleLogout} className="w-full py-4 bg-red-50 text-red-500 rounded-full text-xs font-bold uppercase tracking-widest">Logout</button>
+                      
+                      <div className="grid grid-cols-2 gap-2 px-4">
+                        <Link to="/profile" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-layer-luxe rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-border-luxe/30 transition-colors">
+                          Profile
+                        </Link>
+                        <Link to="/orders" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-layer-luxe rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-border-luxe/30 transition-colors">
+                          Orders
+                        </Link>
+                      </div>
+                      
+                      <button 
+                        onClick={handleLogout} 
+                        className="w-full mx-4 py-4 bg-red-50 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-100 transition-colors flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                      >
+                        <LogOut size={14} />
+                        <span>Logout</span>
+                      </button>
                     </>
                   ) : (
-                    <Link to="/auth" onClick={() => setIsOpen(false)} className="block w-full py-4 bg-primary-luxe text-white text-center rounded-full text-xs font-bold uppercase tracking-widest">Sign In / Register</Link>
+                    <div className="px-4 space-y-3">
+                      <Link 
+                        to="/auth" 
+                        onClick={() => setIsMobileOpen(false)} 
+                        className="block w-full py-4 bg-primary-luxe text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary-luxe transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                      >
+                        Sign In / Register
+                      </Link>
+                      <p className="text-center text-xs text-text-luxe/60">
+                        Get exclusive access to new drops & member pricing
+                      </p>
+                    </div>
                   )}
+                </div>
+              </div>
+
+              {/* Footer Actions (Mobile) */}
+              <div className="p-5 border-t border-border-luxe/20 bg-layer-luxe/30 safe-area-pb">
+                <div className="flex items-center justify-between text-xs text-text-luxe/70">
+                  <span>© 2026 Aura Luxe</span>
+                  <div className="flex space-x-4">
+                    <a href="/privacy" className="hover:text-secondary-luxe transition-colors">Privacy</a>
+                    <a href="/terms" className="hover:text-secondary-luxe transition-colors">Terms</a>
+                  </div>
                 </div>
               </div>
             </motion.div>

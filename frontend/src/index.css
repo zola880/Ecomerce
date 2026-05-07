@@ -98,3 +98,22 @@
     scroll-behavior: smooth;
   }
 }
+/* premium-blur: Glass-morphism effect */
+.premium-blur {
+  @apply bg-bg-luxe/80 backdrop-blur-xl border-b border-border-luxe/10;
+}
+
+/* Safe area padding for notched phones (iOS) */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* Smooth focus rings for accessibility */
+:focus-visible {
+  outline: none;
+}
+
+/* Optional: Add subtle scroll shadow */
+nav.sticky.scrolled {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+}
