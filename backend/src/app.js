@@ -95,16 +95,17 @@ app.use(helmet({
 }));
 
 // CORS configuration – allow multiple origins for production
+// CORS configuration – allow your Vercel frontend
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  process.env.FRONTEND_URL,          // Set this on Render to your Vercel URL
-  'https://aura-luxe-frontend.vercel.app', // fallback – replace with actual URL
-].filter(Boolean); // remove undefined entries
+  'https://ecomerce-rust-iota.vercel.app', // your Vercel URL
+  process.env.FRONTEND_URL,                // fallback if set on Render
+].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc.)
+    // Allow requests with no origin (like mobile apps, curl)
     if (!origin) return callback(null, true);
     // In development, allow any origin
     if (process.env.NODE_ENV !== 'production') {
@@ -114,6 +115,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`Blocked CORS request from origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
