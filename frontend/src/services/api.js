@@ -1,9 +1,13 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Hardcoded for production (Render) and local development
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000/api' 
+  : 'https://ecomerce-2-1566.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -60,7 +64,7 @@ export const orderAPI = {
   createOrder: (orderData) => api.post('/orders', orderData),
   getMyOrders: () => api.get('/orders/myorders'),
   getOrderById: (id) => api.get(`/orders/${id}`),
-  getOrders: (params) => api.get('/orders', { params }), // admin
+  getOrders: (params) => api.get('/orders', { params }),
   updateOrderStatus: (id, status, trackingNumber) => api.put(`/orders/${id}/status`, { status, trackingNumber }),
 };
 
