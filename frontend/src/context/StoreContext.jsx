@@ -40,7 +40,7 @@ export const StoreProvider = ({ children }) => {
 
   const addToCart = async (product, quantity = 1, size = 'M') => {
     try {
-      const productId = product._id || product.id; // fallback for mock data
+      const productId = product._id || product.id;
       const { data } = await cartAPI.addToCart(productId, quantity, size);
       setCart(data.data.items);
       showNotification(`Added ${product.name} to cart`, 'success');
@@ -68,6 +68,17 @@ export const StoreProvider = ({ children }) => {
     } catch (error) {
       console.error('Update cart error:', error);
       showNotification('Failed to update quantity', 'error');
+    }
+  };
+
+  const clearCart = async () => {
+    try {
+      await cartAPI.clearCart();
+      setCart([]);
+      showNotification('Cart cleared successfully', 'info');
+    } catch (error) {
+      console.error('Clear cart error:', error);
+      showNotification('Failed to clear cart', 'error');
     }
   };
 
@@ -102,7 +113,7 @@ export const StoreProvider = ({ children }) => {
   return (
     <StoreContext.Provider value={{
       cart, wishlist, recentlyViewed, loading,
-      addToCart, removeFromCart, updateCartQuantity, toggleWishlist, addRecentlyViewed,
+      addToCart, removeFromCart, updateCartQuantity, clearCart, toggleWishlist, addRecentlyViewed,
       cartTotal
     }}>
       {children}
