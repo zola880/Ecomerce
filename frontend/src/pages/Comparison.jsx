@@ -25,7 +25,6 @@ const Comparison = () => {
       setError(false);
       try {
         if (productIds.length === 0) {
-          // No products in URL – fetch top 3 or show empty state
           const { data } = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
           setProducts(data.data.products);
         } else {
@@ -58,7 +57,6 @@ const Comparison = () => {
   const removeProduct = (id) => {
     const newIds = productIds.filter(pid => pid !== id);
     if (newIds.length === 0) {
-      // Reload with default top products
       setProducts(prev => prev.filter(p => p._id !== id));
     } else {
       navigate(`/comparison?ids=${newIds.join(',')}`);
@@ -197,7 +195,7 @@ const Comparison = () => {
                     ))}
                   </tr>
                 ))}
-                {/* Action row (optional extra) */}
+                {/* Action row */}
                 <tr className="hover:bg-layer-luxe/10 transition-colors">
                   <td className="py-4 md:py-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-border-luxe">Actions</td>
                   {products.map(p => (
@@ -219,7 +217,7 @@ const Comparison = () => {
                     </td>
                   ))}
                   {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => (
-                    <td key={idx} className="py-4 md:py-6 px-4 md:px-6">  </td>
+                    <td key={idx} className="py-4 md:py-6 px-4 md:px-6"></td>
                   ))}
                 </tr>
               </tbody>

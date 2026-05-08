@@ -2,17 +2,19 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShoppingBag, Search, Heart, User, Menu, X, ChevronDown, 
-  ArrowRight, Zap, Scale, LogOut, ChevronRight, Bell, Settings 
+  ArrowRight, Zap, Scale, LogOut, ChevronRight, Bell, Settings,
+  Grid, Compass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 Sub-Components
+// 🔹 Sub‑components (DesktopNavDropdown, ActionButton, UserDropdown unchanged)
 // ─────────────────────────────────────────────────────────────
 
 const DesktopNavDropdown = memo(({ onHover }) => {
+  // ... (exactly same as original)
   const categories = ['Furniture', 'Lighting', 'Decor', 'Lifestyle'];
   const highlights = [
     { title: 'New Arrivals 2026', desc: 'View latest release protocol', path: '/deals' },
@@ -28,9 +30,7 @@ const DesktopNavDropdown = memo(({ onHover }) => {
       className="absolute top-full -left-20 w-[600px] pt-6 z-50"
       onMouseEnter={onHover}
     >
-      {/* Added explicit solid background, no blur, full opacity */}
       <div className="bg-white dark:bg-neutral-900 border border-border-luxe/20 shadow-2xl rounded-[2rem] overflow-hidden grid grid-cols-2 backdrop-blur-none">
-        {/* Left column – Categories */}
         <div className="p-8 space-y-6 bg-layer-luxe/30 backdrop-blur-none">
           <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Curated Spheres</h4>
           <nav className="flex flex-col space-y-2" role="menu">
@@ -46,7 +46,6 @@ const DesktopNavDropdown = memo(({ onHover }) => {
             ))}
           </nav>
         </div>
-        {/* Right column – Highlights */}
         <div className="p-8 space-y-6 backdrop-blur-none">
           <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe">Highlights</h4>
           <div className="space-y-4">
@@ -69,9 +68,8 @@ const DesktopNavDropdown = memo(({ onHover }) => {
   );
 });
 
-
-// Updated ActionButton with brand colors
 const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor = 'bg-[#8B5E3C]' }) => {
+  // ... (already using brand colors)
   const content = (
     <>
       <Icon size={20} aria-hidden="true" />
@@ -102,8 +100,8 @@ const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor
   );
 });
 
-// Updated UserDropdown button
 const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
+  // ... (unchanged)
   const [isOpen, setIsOpen] = useState(false);
   
   const menuItems = [
@@ -171,15 +169,50 @@ const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 Main Navbar Component
+// 🔹 Sphere Dropdown for Mobile (new component)
 // ─────────────────────────────────────────────────────────────
+const MobileSphereDropdown = memo(({ isOpen, onClose }) => {
+  const categories = ['Furniture', 'Lighting', 'Decor', 'Lifestyle'];
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-border-luxe/20 z-50 overflow-hidden"
+        >
+          <div className="p-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-secondary-luxe mb-3">Curated Spheres</h4>
+            <div className="flex flex-col space-y-2">
+              {categories.map(cat => (
+                <Link
+                  key={cat}
+                  to={`/products?category=${cat}`}
+                  onClick={onClose}
+                  className="block py-2 px-3 text-sm font-medium hover:bg-[#8B5E3C]/10 rounded-lg transition-colors"
+                >
+                  {cat}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});
 
+// ─────────────────────────────────────────────────────────────
+// 🔹 Main Navbar
+// ─────────────────────────────────────────────────────────────
 const Navbar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownHovered, setIsDropdownHovered] = useState(false);
+  const [isSphereDropdownOpen, setIsSphereDropdownOpen] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -275,7 +308,7 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation (unchanged) */}
           <div className="hidden xl:flex items-center space-x-10">
             <div 
               className="group relative"
@@ -347,6 +380,18 @@ const Navbar = () => {
               </Link>
             )}
 
+            {/* Sphere icon button (visible only on mobile/tablet) */}
+            <div className="relative xl:hidden">
+              <button
+                onClick={() => setIsSphereDropdownOpen(!isSphereDropdownOpen)}
+                className="p-2.5 bg-[#8B5E3C] text-white hover:bg-[#6F472C] rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
+                aria-label="Sphere categories"
+              >
+                <Grid size={20} />
+              </button>
+              <MobileSphereDropdown isOpen={isSphereDropdownOpen} onClose={() => setIsSphereDropdownOpen(false)} />
+            </div>
+
             {/* Mobile Menu Toggle */}
             <button 
               className="xl:hidden p-2.5 bg-[#8B5E3C] text-white hover:bg-[#6F472C] rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
@@ -360,7 +405,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Search Overlay */}
+      {/* Search Overlay (unchanged) */}
       <AnimatePresence>
         {isSearchOpen && (
           <motion.div 
@@ -425,123 +470,109 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Drawer */}
+      {/* NEW Mobile Menu – Dropdown from top‑right */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] xl:hidden" 
+            {/* Backdrop that closes menu when clicked */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-[60] xl:hidden"
               onClick={() => setIsMobileOpen(false)}
-              aria-hidden="true"
             />
-            <motion.div 
-              initial={{ x: '100%' }} 
-              animate={{ x: 0 }} 
-              exit={{ x: '100%' }} 
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-bg-luxe z-[70] shadow-2xl xl:hidden flex flex-col safe-area-pb"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Mobile menu"
+            {/* Menu panel – slides down from top‑right corner */}
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="fixed top-16 right-4 w-[calc(100%-2rem)] sm:w-96 bg-white rounded-2xl shadow-2xl z-[70] max-h-[85vh] overflow-y-auto xl:hidden"
+              style={{ backgroundColor: 'white' }}
             >
-              <div className="flex justify-between items-center p-5 border-b border-border-luxe/20">
-                <span className="font-display text-xl font-bold tracking-tighter text-primary-luxe uppercase">
-                  Aura<span className="text-secondary-luxe"> Luxe</span>
-                </span>
-                <button 
-                  onClick={() => setIsMobileOpen(false)} 
-                  className="p-2 bg-[#8B5E3C] text-white hover:bg-[#6F472C] rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
-                  aria-label="Close menu"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto py-6 px-5 space-y-8">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-border-luxe" size={18} aria-hidden="true" />
-                  <input 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-                    placeholder="Search..." 
-                    className="w-full pl-11 pr-4 py-3 bg-layer-luxe rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 transition-all"
-                    aria-label="Search in mobile menu"
-                  />
+              <div className="p-5 space-y-6">
+                {/* Header with logo and close */}
+                <div className="flex justify-between items-center pb-2 border-b border-border-luxe/10">
+                  <span className="font-display text-xl font-bold tracking-tighter text-primary-luxe uppercase">
+                    Aura<span className="text-secondary-luxe"> Luxe</span>
+                  </span>
+                  <button
+                    onClick={() => setIsMobileOpen(false)}
+                    className="p-2 bg-[#8B5E3C] text-white rounded-full hover:bg-[#6F472C] transition-colors"
+                    aria-label="Close menu"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
 
-                <nav className="space-y-2" role="menu">
-                  {['Products', 'Deals', 'Brands', 'Comparison', 'About', 'Help'].map((link, idx) => (
-                    <Link 
-                      key={link} 
-                      to={`/${link.toLowerCase() === 'products' ? 'products' : link.toLowerCase()}`} 
-                      className="flex items-center justify-between w-full py-4 px-4 text-lg font-display font-light hover:bg-[#8B5E3C] hover:text-white rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
+                {/* Main navigation (without search and spheres) */}
+                <nav className="space-y-1">
+                  {['Products', 'Deals', 'Brands', 'Comparison', 'About', 'Help'].map((link) => (
+                    <Link
+                      key={link}
+                      to={`/${link.toLowerCase() === 'products' ? 'products' : link.toLowerCase()}`}
                       onClick={() => setIsMobileOpen(false)}
-                      role="menuitem"
+                      className="flex items-center justify-between w-full py-3 px-3 text-base font-display font-medium hover:bg-[#8B5E3C]/10 rounded-xl transition-colors"
                     >
                       <span>{link}</span>
-                      <ChevronRight size={18} className="text-text-luxe/40" />
+                      <ChevronRight size={16} className="text-text-luxe/40" />
                     </Link>
                   ))}
                 </nav>
 
-                <div className="pt-4 border-t border-border-luxe/20">
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe mb-4 px-4">Browse Spheres</h4>
-                  <div className="grid grid-cols-2 gap-2 px-4">
-                    {['Furniture', 'Lighting', 'Decor', 'Lifestyle'].map(cat => (
-                      <Link 
-                        key={cat} 
-                        to={`/products?category=${cat}`}
-                        onClick={() => setIsMobileOpen(false)}
-                        className="py-3 px-4 bg-[#8B5E3C] text-white rounded-xl text-sm font-medium text-center hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
-                      >
-                        {cat}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border-luxe/20 space-y-4">
+                {/* User section (if logged in / out) */}
+                <div className="pt-2 border-t border-border-luxe/20">
                   {user ? (
-                    <>
-                      <div className="flex items-center justify-between px-4 py-3 bg-layer-luxe rounded-xl">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-[#8B5E3C] to-[#6F472C] text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
-                            {getUserInitials()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold">Hello, {user.name?.split(' ')[0]}</p>
-                            <p className="text-xs text-text-luxe/60">{user.email}</p>
-                          </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3 px-3 py-2 bg-layer-luxe rounded-xl">
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#8B5E3C] to-[#6F472C] text-white rounded-full flex items-center justify-center font-bold text-sm">
+                          {getUserInitials()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold">Hello, {user.name?.split(' ')[0]}</p>
+                          <p className="text-xs text-text-luxe/60">{user.email}</p>
                         </div>
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 px-4">
-                        <Link to="/profile" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50">
+                      <div className="grid grid-cols-2 gap-3">
+                        <Link
+                          to="/profile"
+                          onClick={() => setIsMobileOpen(false)}
+                          className="py-3 text-center bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors"
+                        >
                           Profile
                         </Link>
-                        <Link to="/orders" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50">
+                        <Link
+                          to="/orders"
+                          onClick={() => setIsMobileOpen(false)}
+                          className="py-3 text-center bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors"
+                        >
                           Orders
                         </Link>
                       </div>
-                      
-                      <button 
-                        onClick={handleLogout} 
-                        className="w-full mx-4 py-4 bg-red-50 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-100 transition-colors flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                      {user.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsMobileOpen(false)}
+                          className="block py-3 text-center bg-[#8B5E3C]/20 text-[#8B5E3C] rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#8B5E3C] hover:text-white transition-colors"
+                        >
+                          Admin Console
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full py-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-100 transition-colors flex items-center justify-center space-x-2"
                       >
                         <LogOut size={14} />
                         <span>Logout</span>
                       </button>
-                    </>
+                    </div>
                   ) : (
-                    <div className="px-4 space-y-3">
-                      <Link 
-                        to="/auth" 
-                        onClick={() => setIsMobileOpen(false)} 
-                        className="block w-full py-4 bg-[#8B5E3C] text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
+                    <div className="space-y-3">
+                      <Link
+                        to="/auth"
+                        onClick={() => setIsMobileOpen(false)}
+                        className="block w-full py-3 bg-[#8B5E3C] text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors"
                       >
                         Sign In / Register
                       </Link>
@@ -551,14 +582,13 @@ const Navbar = () => {
                     </div>
                   )}
                 </div>
-              </div>
 
-              <div className="p-5 border-t border-border-luxe/20 bg-layer-luxe/30 safe-area-pb">
-                <div className="flex items-center justify-between text-xs text-text-luxe/70">
-                  <span>© 2026 Aura Luxe</span>
-                  <div className="flex space-x-4">
-                    <a href="/privacy" className="hover:text-secondary-luxe transition-colors">Privacy</a>
-                    <a href="/terms" className="hover:text-secondary-luxe transition-colors">Terms</a>
+                {/* Footer */}
+                <div className="pt-2 border-t border-border-luxe/20 text-center">
+                  <p className="text-xs text-text-luxe/50">© 2026 Aura Luxe</p>
+                  <div className="flex justify-center gap-4 mt-2">
+                    <a href="/privacy" className="text-[10px] text-text-luxe/40 hover:text-secondary-luxe transition-colors">Privacy</a>
+                    <a href="/terms" className="text-[10px] text-text-luxe/40 hover:text-secondary-luxe transition-colors">Terms</a>
                   </div>
                 </div>
               </div>
