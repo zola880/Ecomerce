@@ -76,6 +76,7 @@ const Products = () => {
     setSortBy('Featured');
     setPagination({ page: 1, pages: 1, total: 0 });
     setSearchParams({});
+    setShowFilters(false);
   };
 
   return (
@@ -89,14 +90,22 @@ const Products = () => {
           </div>
           <div className="flex items-center space-x-4">
             <div className="hidden sm:flex items-center space-x-2 bg-layer-luxe p-1.5 rounded-2xl">
-              <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-luxe' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
+              <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-secondary-luxe text-white' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
                 <Grid2X2 size={18} />
               </button>
-              <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-luxe' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
+              <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-secondary-luxe text-white' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
                 <List size={18} />
               </button>
             </div>
-            <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center space-x-2 px-5 py-3 md:px-8 md:py-4 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${showFilters ? 'bg-primary-luxe text-white' : 'bg-layer-luxe hover:bg-border-luxe/20'}`}>
+            {/* Filter button – brand color applied */}
+            <button 
+              onClick={() => setShowFilters(!showFilters)} 
+              className={`flex items-center space-x-2 px-5 py-3 md:px-8 md:py-4 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+                showFilters 
+                  ? 'bg-[#8B5E3C] text-white' 
+                  : 'bg-[#8B5E3C] text-white hover:bg-[#6F472C]'
+              }`}
+            >
               <SlidersHorizontal size={14} /><span>Filter</span>
             </button>
           </div>
@@ -211,7 +220,13 @@ const Products = () => {
               </div>
             </div>
             <div className="p-6 border-t border-border-luxe/10">
-              <button onClick={clearFilters} className="w-full py-4 bg-secondary-luxe/10 text-secondary-luxe rounded-full text-xs font-bold uppercase tracking-widest hover:bg-secondary-luxe hover:text-white transition-all">Reset All Filters</button>
+              {/* Reset button – brand color applied */}
+              <button 
+                onClick={clearFilters} 
+                className="w-full py-4 bg-[#8B5E3C] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-all"
+              >
+                Reset All Filters
+              </button>
             </div>
           </motion.div>
         )}

@@ -82,9 +82,9 @@ const Cart = () => {
                       <div className="space-y-1">
                         <span className="text-[9px] font-bold uppercase tracking-widest text-text-luxe/40">Qty</span>
                         <div className="flex items-center space-x-2">
-                          <button onClick={() => handleQuantityChange(item._id, item.quantity - 1)} className="w-8 h-8 rounded-full bg-layer-luxe flex items-center justify-center hover:bg-border-luxe/20 transition-colors">-</button>
+                          <button onClick={() => handleQuantityChange(item._id, item.quantity - 1)} className="w-8 h-8 rounded-full bg-secondary-luxe text-white flex items-center justify-center hover:bg-highlight-luxe transition-colors">-</button>
                           <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
-                          <button onClick={() => handleQuantityChange(item._id, item.quantity + 1)} className="w-8 h-8 rounded-full bg-layer-luxe flex items-center justify-center hover:bg-border-luxe/20 transition-colors">+</button>
+                          <button onClick={() => handleQuantityChange(item._id, item.quantity + 1)} className="w-8 h-8 rounded-full bg-secondary-luxe text-white flex items-center justify-center hover:bg-highlight-luxe transition-colors">+</button>
                         </div>
                       </div>
                     </div>

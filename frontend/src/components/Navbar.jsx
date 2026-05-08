@@ -9,7 +9,7 @@ import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 Sub-Components (for maintainability & performance)
+// 🔹 Sub-Components
 // ─────────────────────────────────────────────────────────────
 
 const DesktopNavDropdown = memo(({ onHover }) => {
@@ -28,9 +28,10 @@ const DesktopNavDropdown = memo(({ onHover }) => {
       className="absolute top-full -left-20 w-[600px] pt-6 z-50"
       onMouseEnter={onHover}
     >
-      <div className="bg-bg-luxe border border-border-luxe/20 shadow-2xl rounded-[2rem] overflow-hidden grid grid-cols-2">
-        {/* Categories Column */}
-        <div className="p-8 space-y-6 bg-layer-luxe/30">
+      {/* Added explicit solid background, no blur, full opacity */}
+      <div className="bg-white dark:bg-neutral-900 border border-border-luxe/20 shadow-2xl rounded-[2rem] overflow-hidden grid grid-cols-2 backdrop-blur-none">
+        {/* Left column – Categories */}
+        <div className="p-8 space-y-6 bg-layer-luxe/30 backdrop-blur-none">
           <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Curated Spheres</h4>
           <nav className="flex flex-col space-y-2" role="menu">
             {categories.map(cat => (
@@ -45,9 +46,8 @@ const DesktopNavDropdown = memo(({ onHover }) => {
             ))}
           </nav>
         </div>
-        
-        {/* Highlights Column */}
-        <div className="p-8 space-y-6">
+        {/* Right column – Highlights */}
+        <div className="p-8 space-y-6 backdrop-blur-none">
           <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe">Highlights</h4>
           <div className="space-y-4">
             {highlights.map(item => (
@@ -69,7 +69,9 @@ const DesktopNavDropdown = memo(({ onHover }) => {
   );
 });
 
-const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor = 'bg-primary-luxe' }) => {
+
+// Updated ActionButton with brand colors
+const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor = 'bg-[#8B5E3C]' }) => {
   const content = (
     <>
       <Icon size={20} aria-hidden="true" />
@@ -83,13 +85,13 @@ const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor
         </motion.span>
       )}
       {badge === 'pulse' && (
-        <span className="absolute top-1 right-1 w-2 h-2 bg-secondary-luxe rounded-full animate-pulse" aria-label="New items" />
+        <span className="absolute top-1 right-1 w-2 h-2 bg-[#8B5E3C] rounded-full animate-pulse" aria-label="New items" />
       )}
     </>
   );
 
   const commonProps = {
-    className: "p-2.5 hover:bg-layer-luxe rounded-full transition-all relative group focus:outline-none focus:ring-2 focus:ring-primary-luxe/50",
+    className: "p-2.5 bg-[#8B5E3C] hover:bg-[#6F472C] text-white rounded-full transition-all relative group focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50",
     'aria-label': label,
   };
 
@@ -100,6 +102,7 @@ const ActionButton = memo(({ icon: Icon, label, badge, onClick, href, badgeColor
   );
 });
 
+// Updated UserDropdown button
 const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -114,14 +117,14 @@ const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
     <div className="relative" onMouseLeave={() => setIsOpen(false)}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-1.5 pl-4 pr-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/20 transition-all border border-border-luxe/10 focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+        className="flex items-center space-x-2 p-1.5 pl-4 pr-1.5 bg-[#8B5E3C] text-white rounded-full hover:bg-[#6F472C] transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <span className="text-[10px] font-bold uppercase tracking-widest text-primary-luxe hidden sm:inline">
+        <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">
           {user.name?.split(' ')[0]}
         </span>
-        <div className="w-8 h-8 bg-gradient-to-br from-primary-luxe to-secondary-luxe text-white rounded-full flex items-center justify-center text-xs font-bold uppercase shadow-lg">
+        <div className="w-8 h-8 bg-gradient-to-br from-[#8B5E3C] to-[#6F472C] text-white rounded-full flex items-center justify-center text-xs font-bold uppercase shadow-lg">
           {getUserInitials()}
         </div>
         <ChevronDown size={12} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -143,7 +146,7 @@ const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
                 to={item.path}
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center space-x-3 px-5 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-layer-luxe transition-colors ${
-                  item.highlight ? 'text-secondary-luxe' : 'text-primary-luxe'
+                  item.highlight ? 'text-[#8B5E3C]' : 'text-primary-luxe'
                 } ${idx === menuItems.length - 1 && !user.admin ? 'border-b border-border-luxe/20' : ''}`}
                 role="menuitem"
               >
@@ -183,13 +186,11 @@ const Navbar = () => {
   const { cart, wishlist } = useStore();
   const { user, logout } = useAuth();
 
-  // Close menus on route change
   useEffect(() => {
     setIsMobileOpen(false);
     setIsSearchOpen(false);
   }, [location.pathname]);
 
-  // Scroll detection for navbar styling
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -198,7 +199,6 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on large screens
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1280 && isMobileOpen) {
@@ -209,7 +209,6 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileOpen]);
 
-  // Keyboard navigation for mobile menu
   useEffect(() => {
     if (isMobileOpen) {
       const handleKey = (e) => {
@@ -254,10 +253,6 @@ const Navbar = () => {
   const trendingSearches = ['Minimalist Vases', 'Soft Lighting', 'Linen Textures'];
   const curatedResults = ['New Arrivals', 'Clearance Archive', 'Best Sellers'];
 
-  // ─────────────────────────────────────────────────────────
-  // 🔹 Render
-  // ─────────────────────────────────────────────────────────
-
   return (
     <nav 
       className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -269,10 +264,10 @@ const Navbar = () => {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
           
-          {/* ── Logo ── */}
+          {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center space-x-2 group focus:outline-none focus:ring-2 focus:ring-primary-luxe/50 rounded-lg p-1"
+            className="flex items-center space-x-2 group focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 rounded-lg p-1"
             aria-label="Aura Luxe Home"
           >
             <span className="font-display text-xl sm:text-2xl font-bold tracking-tighter text-primary-luxe uppercase">
@@ -280,16 +275,15 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* ── Desktop Navigation (xl+) ── */}
+          {/* Desktop Navigation */}
           <div className="hidden xl:flex items-center space-x-10">
-            {/* Spheres Dropdown */}
             <div 
               className="group relative"
               onMouseEnter={() => setIsDropdownHovered(true)}
               onMouseLeave={() => setIsDropdownHovered(false)}
             >
               <button 
-                className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors py-2 focus:outline-none focus:ring-2 focus:ring-primary-luxe/50 rounded-lg px-2"
+                className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors py-2 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 rounded-lg px-2"
                 aria-haspopup="true"
                 aria-expanded={isDropdownHovered}
               >
@@ -304,12 +298,11 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
 
-            {/* Main Nav Links */}
             {navLinks.map(link => (
               <Link 
                 key={link.label} 
                 to={link.path} 
-                className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors flex items-center space-x-1.5 py-2 px-1 focus:outline-none focus:ring-2 focus:ring-primary-luxe/50 rounded-lg"
+                className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-secondary-luxe transition-colors flex items-center space-x-1.5 py-2 px-1 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 rounded-lg"
               >
                 {link.icon && <link.icon size={12} aria-hidden="true" />}
                 <span>{link.label}</span>
@@ -317,24 +310,19 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* ── Action Buttons ── */}
+          {/* Action Buttons */}
           <div className="flex items-center space-x-1 sm:space-x-2">
-            {/* Search Toggle */}
             <ActionButton 
               icon={Search} 
               label="Search" 
               onClick={() => setIsSearchOpen(!isSearchOpen)} 
             />
-            
-            {/* Wishlist */}
             <ActionButton 
               icon={Heart} 
               label="Wishlist" 
               href="/wishlist" 
               badge={wishlist.length > 0 ? 'pulse' : undefined} 
             />
-            
-            {/* Cart */}
             <ActionButton 
               icon={ShoppingBag} 
               label="Cart" 
@@ -342,7 +330,6 @@ const Navbar = () => {
               badge={cart.length} 
             />
 
-            {/* Auth Section */}
             {user ? (
               <div className="hidden md:block">
                 <UserDropdown 
@@ -354,7 +341,7 @@ const Navbar = () => {
             ) : (
               <Link 
                 to="/auth" 
-                className="hidden md:flex items-center text-[10px] font-bold uppercase tracking-widest text-primary-luxe px-4 py-2 border border-border-luxe rounded-full hover:bg-primary-luxe hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                className="hidden md:flex items-center text-[10px] font-bold uppercase tracking-widest text-white px-4 py-2 bg-[#8B5E3C] rounded-full hover:bg-[#6F472C] transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
               >
                 Sign In
               </Link>
@@ -362,7 +349,7 @@ const Navbar = () => {
 
             {/* Mobile Menu Toggle */}
             <button 
-              className="xl:hidden p-2.5 hover:bg-layer-luxe rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+              className="xl:hidden p-2.5 bg-[#8B5E3C] text-white hover:bg-[#6F472C] rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
               onClick={() => setIsMobileOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMobileOpen}
@@ -373,7 +360,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* ── Search Overlay ── */}
+      {/* Search Overlay */}
       <AnimatePresence>
         {isSearchOpen && (
           <motion.div 
@@ -396,7 +383,7 @@ const Navbar = () => {
                 />
                 <button 
                   type="submit" 
-                  className="p-3 bg-primary-luxe text-white rounded-full hover:bg-secondary-luxe transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-luxe"
+                  className="p-3 bg-[#8B5E3C] text-white rounded-full hover:bg-[#6F472C] transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5E3C]"
                   aria-label="Submit search"
                 >
                   <ArrowRight size={18} />
@@ -411,7 +398,7 @@ const Navbar = () => {
                       <button 
                         key={s} 
                         onClick={() => { setSearchQuery(s); handleSearch(); }} 
-                        className="text-sm px-3 py-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/30 transition-colors text-left"
+                        className="text-sm px-3 py-1.5 bg-[#8B5E3C] text-white rounded-full hover:bg-[#6F472C] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                       >
                         {s}
                       </button>
@@ -425,7 +412,7 @@ const Navbar = () => {
                       <button 
                         key={s} 
                         onClick={() => navigate(`/search?q=${encodeURIComponent(s)}`)} 
-                        className="text-sm px-3 py-1.5 bg-layer-luxe rounded-full hover:bg-border-luxe/30 transition-colors text-left"
+                        className="text-sm px-3 py-1.5 bg-[#8B5E3C] text-white rounded-full hover:bg-[#6F472C] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                       >
                         {s}
                       </button>
@@ -438,11 +425,10 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Mobile Menu Drawer ── */}
+      {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
@@ -451,8 +437,6 @@ const Navbar = () => {
               onClick={() => setIsMobileOpen(false)}
               aria-hidden="true"
             />
-            
-            {/* Drawer */}
             <motion.div 
               initial={{ x: '100%' }} 
               animate={{ x: 0 }} 
@@ -463,24 +447,20 @@ const Navbar = () => {
               aria-modal="true"
               aria-label="Mobile menu"
             >
-              {/* Header */}
               <div className="flex justify-between items-center p-5 border-b border-border-luxe/20">
                 <span className="font-display text-xl font-bold tracking-tighter text-primary-luxe uppercase">
                   Aura<span className="text-secondary-luxe"> Luxe</span>
                 </span>
                 <button 
                   onClick={() => setIsMobileOpen(false)} 
-                  className="p-2 hover:bg-layer-luxe rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                  className="p-2 bg-[#8B5E3C] text-white hover:bg-[#6F472C] rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                   aria-label="Close menu"
                 >
                   <X size={24} />
                 </button>
               </div>
 
-              {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto py-6 px-5 space-y-8">
-                
-                {/* Search in Mobile */}
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-border-luxe" size={18} aria-hidden="true" />
                   <input 
@@ -488,18 +468,17 @@ const Navbar = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
                     placeholder="Search..." 
-                    className="w-full pl-11 pr-4 py-3 bg-layer-luxe rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-luxe/50 transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-layer-luxe rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 transition-all"
                     aria-label="Search in mobile menu"
                   />
                 </div>
 
-                {/* Main Navigation */}
                 <nav className="space-y-2" role="menu">
                   {['Products', 'Deals', 'Brands', 'Comparison', 'About', 'Help'].map((link, idx) => (
                     <Link 
                       key={link} 
                       to={`/${link.toLowerCase() === 'products' ? 'products' : link.toLowerCase()}`} 
-                      className="flex items-center justify-between w-full py-4 px-4 text-lg font-display font-light hover:text-secondary-luxe hover:bg-layer-luxe/50 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                      className="flex items-center justify-between w-full py-4 px-4 text-lg font-display font-light hover:bg-[#8B5E3C] hover:text-white rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                       onClick={() => setIsMobileOpen(false)}
                       role="menuitem"
                     >
@@ -509,7 +488,6 @@ const Navbar = () => {
                   ))}
                 </nav>
 
-                {/* Spheres Categories (Mobile) */}
                 <div className="pt-4 border-t border-border-luxe/20">
                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe mb-4 px-4">Browse Spheres</h4>
                   <div className="grid grid-cols-2 gap-2 px-4">
@@ -518,7 +496,7 @@ const Navbar = () => {
                         key={cat} 
                         to={`/products?category=${cat}`}
                         onClick={() => setIsMobileOpen(false)}
-                        className="py-3 px-4 bg-layer-luxe rounded-xl text-sm font-medium text-center hover:bg-border-luxe/30 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                        className="py-3 px-4 bg-[#8B5E3C] text-white rounded-xl text-sm font-medium text-center hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                       >
                         {cat}
                       </Link>
@@ -526,13 +504,12 @@ const Navbar = () => {
                   </div>
                 </div>
 
-                {/* User Section */}
                 <div className="pt-4 border-t border-border-luxe/20 space-y-4">
                   {user ? (
                     <>
                       <div className="flex items-center justify-between px-4 py-3 bg-layer-luxe rounded-xl">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary-luxe to-secondary-luxe text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#8B5E3C] to-[#6F472C] text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
                             {getUserInitials()}
                           </div>
                           <div>
@@ -543,10 +520,10 @@ const Navbar = () => {
                       </div>
                       
                       <div className="grid grid-cols-2 gap-2 px-4">
-                        <Link to="/profile" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-layer-luxe rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-border-luxe/30 transition-colors">
+                        <Link to="/profile" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50">
                           Profile
                         </Link>
-                        <Link to="/orders" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-layer-luxe rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-border-luxe/30 transition-colors">
+                        <Link to="/orders" onClick={() => setIsMobileOpen(false)} className="py-3 px-4 bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest text-center hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50">
                           Orders
                         </Link>
                       </div>
@@ -564,7 +541,7 @@ const Navbar = () => {
                       <Link 
                         to="/auth" 
                         onClick={() => setIsMobileOpen(false)} 
-                        className="block w-full py-4 bg-primary-luxe text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary-luxe transition-colors focus:outline-none focus:ring-2 focus:ring-primary-luxe/50"
+                        className="block w-full py-4 bg-[#8B5E3C] text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                       >
                         Sign In / Register
                       </Link>
@@ -576,7 +553,6 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Footer Actions (Mobile) */}
               <div className="p-5 border-t border-border-luxe/20 bg-layer-luxe/30 safe-area-pb">
                 <div className="flex items-center justify-between text-xs text-text-luxe/70">
                   <span>© 2026 Aura Luxe</span>

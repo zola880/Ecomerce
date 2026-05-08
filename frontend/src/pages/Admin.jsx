@@ -112,7 +112,6 @@ const Admin = () => {
     return <div className="min-h-screen flex items-center justify-center">Access Denied. Admin privileges required.</div>;
   }
 
-  // Sidebar navigation items
   const navItems = [
     { id: 'dashboard', label: 'Analytics', icon: LayoutDashboard },
     { id: 'inventory', label: 'Inventory', icon: Package },
@@ -122,15 +121,14 @@ const Admin = () => {
 
   return (
     <div className="flex min-h-screen bg-bg-luxe">
-      {/* Mobile hamburger button (visible below lg) */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-primary-luxe text-white rounded-full shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#8B5E3C] text-white rounded-full shadow-lg hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
+        aria-label="Open menu"
       >
         <Menu size={20} />
       </button>
 
-      {/* Sidebar for desktop & mobile drawer */}
       <div className={`
         fixed lg:static inset-y-0 left-0 z-40 w-80 bg-layer-luxe border-r border-border-luxe/20
         transform transition-transform duration-300 ease-in-out
@@ -139,8 +137,8 @@ const Admin = () => {
         <div className="flex flex-col h-full p-6 md:p-8">
           <div className="flex justify-between items-center mb-8 lg:mb-16">
             <span className="font-display text-xl font-bold uppercase tracking-tighter">Aura <span className="italic font-light">Terminal</span></span>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 hover:bg-border-luxe/20 rounded-full">
-              <X size={20} />
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-full transition-colors hover:bg-[#8B5E3C]/10 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50" aria-label="Close menu">
+              <X size={20} className="text-[#8B5E3C]" />
             </button>
           </div>
           <nav className="space-y-2 flex-1">
@@ -150,25 +148,24 @@ const Admin = () => {
                 onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-4 px-4 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all ${
                   activeTab === item.id
-                    ? 'bg-primary-luxe text-white shadow-xl shadow-primary-luxe/20'
+                    ? 'bg-[#8B5E3C] text-white shadow-xl shadow-[#8B5E3C]/20'
                     : 'hover:bg-border-luxe/20 text-text-luxe/60'
                 }`}
               >
-                <item.icon size={18} /><span>{item.label}</span>
+                <item.icon size={18} />
+                <span>{item.label}</span>
               </button>
             ))}
           </nav>
         </div>
       </div>
 
-      {/* Backdrop for mobile sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       <main className="flex-1 p-4 sm:p-6 md:p-8 lg:p-12 overflow-y-auto">
         <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
-          {/* Header with title and action button */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border-luxe/10 pb-6 md:pb-8">
             <div className="space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Operational Console</span>
@@ -178,7 +175,7 @@ const Admin = () => {
               {activeTab === 'inventory' && (
                 <button
                   onClick={() => { setEditingProduct(null); setProductForm({ name: '', price: '', category: 'Furniture', description: '', image: '', stock: 10, isNew: false, isBestSeller: false, isSale: false, salePrice: '' }); setShowProductModal(true); }}
-                  className="flex items-center space-x-2 px-4 py-3 md:px-6 md:py-4 bg-primary-luxe text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary-luxe transition-all shadow-xl"
+                  className="flex items-center space-x-2 px-4 py-3 md:px-6 md:py-4 bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-all shadow-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50"
                 >
                   <Plus size={16} /><span>Enact New Piece</span>
                 </button>
@@ -189,22 +186,21 @@ const Admin = () => {
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && stats && (
               <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-10 md:space-y-12">
-                {/* Stats grid - responsive: 1 on mobile, 2 on tablet, 4 on desktop */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                   <div className="card-luxe p-5 md:p-8 space-y-4 md:space-y-6">
-                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-primary-luxe rounded-2xl text-white"><BarChart3 size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+12.5%</span></div>
+                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-[#8B5E3C] rounded-2xl text-white"><BarChart3 size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+12.5%</span></div>
                     <div><p className="text-[10px] font-bold uppercase tracking-widest text-text-luxe/40">Total Revenue</p><h3 className="text-2xl md:text-3xl font-display">${stats?.totalRevenue?.toLocaleString() || 0}</h3></div>
                   </div>
                   <div className="card-luxe p-5 md:p-8 space-y-4 md:space-y-6">
-                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-secondary-luxe rounded-2xl text-white"><ShoppingCart size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+5.2%</span></div>
+                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-[#8B5E3C] rounded-2xl text-white"><ShoppingCart size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+5.2%</span></div>
                     <div><p className="text-[10px] font-bold uppercase tracking-widest text-text-luxe/40">Active Orders</p><h3 className="text-2xl md:text-3xl font-display">{stats?.totalOrders || 0}</h3></div>
                   </div>
                   <div className="card-luxe p-5 md:p-8 space-y-4 md:space-y-6">
-                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-highlight-luxe rounded-2xl text-white"><Package size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+8%</span></div>
+                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-[#8B5E3C] rounded-2xl text-white"><Package size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+8%</span></div>
                     <div><p className="text-[10px] font-bold uppercase tracking-widest text-text-luxe/40">Products</p><h3 className="text-2xl md:text-3xl font-display">{stats?.totalProducts || 0}</h3></div>
                   </div>
                   <div className="card-luxe p-5 md:p-8 space-y-4 md:space-y-6">
-                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-primary-luxe rounded-2xl text-white"><Users size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+18.4%</span></div>
+                    <div className="flex justify-between"><div className="p-3 md:p-4 bg-[#8B5E3C] rounded-2xl text-white"><Users size={20} className="md:w-6 md:h-6" /></div><span className="text-green-600 text-[10px] font-bold">+18.4%</span></div>
                     <div><p className="text-[10px] font-bold uppercase tracking-widest text-text-luxe/40">Collectors</p><h3 className="text-2xl md:text-3xl font-display">{stats?.totalUsers || 0}</h3></div>
                   </div>
                 </div>
@@ -235,7 +231,16 @@ const Admin = () => {
                           <td className="py-4 md:py-6 px-4 md:px-8 text-sm font-mono">${p.price}</td>
                           <td className="py-4 md:py-6 px-4 md:px-8 text-xs">{p.category}</td>
                           <td className="py-4 md:py-6 px-4 md:px-8 text-xs">{p.stock} units</td>
-                          <td className="py-4 md:py-6 px-4 md:px-8 text-right"><div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => { setEditingProduct(p); setProductForm({ name: p.name, price: p.price, category: p.category, description: p.description, image: p.image, stock: p.stock, isNew: p.isNew, isBestSeller: p.isBestSeller, isSale: p.isSale, salePrice: p.salePrice || '' }); setShowProductModal(true); }} className="p-2 hover:bg-border-luxe rounded-lg"><Edit2 size={16} /></button><button onClick={() => handleDeleteProduct(p._id)} className="p-2 hover:bg-red-100 rounded-lg text-red-500"><Trash2 size={16} /></button></div></td>
+                          <td className="py-4 md:py-6 px-4 md:px-8 text-right">
+                            <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => { setEditingProduct(p); setProductForm({ name: p.name, price: p.price, category: p.category, description: p.description, image: p.image, stock: p.stock, isNew: p.isNew, isBestSeller: p.isBestSeller, isSale: p.isSale, salePrice: p.salePrice || '' }); setShowProductModal(true); }} className="p-2 rounded-lg transition-all hover:bg-[#8B5E3C]/10 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50" aria-label="Edit product">
+                                <Edit2 size={16} className="group-hover:text-[#8B5E3C] transition-colors" />
+                              </button>
+                              <button onClick={() => handleDeleteProduct(p._id)} className="p-2 rounded-lg hover:bg-red-100 transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50" aria-label="Delete product">
+                                <Trash2 size={16} className="text-red-500" />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -256,8 +261,16 @@ const Admin = () => {
                           <td className="py-4 md:py-6 px-4 md:px-8">{order.user?.name}</td>
                           <td className="py-4 md:py-6 px-4 md:px-8 text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
                           <td className="py-4 md:py-6 px-4 md:px-8 font-mono font-bold">${order.totalPrice}</td>
-                          <td className="py-4 md:py-6 px-4 md:px-8"><select value={order.status} onChange={(e) => updateOrderStatus(order._id, e.target.value)} className="bg-transparent border border-border-luxe rounded-lg px-2 py-1 text-xs font-bold uppercase"><option value="pending">Pending</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select></td>
-                          <td className="py-4 md:py-6 px-4 md:px-8"><Link to={`/orders/${order._id}`} className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">View</Link></td>
+                          <td className="py-4 md:py-6 px-4 md:px-8">
+                            <select value={order.status} onChange={(e) => updateOrderStatus(order._id, e.target.value)} className="bg-transparent border border-border-luxe rounded-lg px-2 py-1 text-xs font-bold uppercase focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 focus:border-[#8B5E3C] transition-all">
+                              <option value="pending">Pending</option>
+                              <option value="processing">Processing</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                          <td className="py-4 md:py-6 px-4 md:px-8"><Link to={`/orders/${order._id}`} className="text-[10px] font-bold uppercase tracking-widest text-[#8B5E3C] hover:text-[#6F472C] transition-colors focus:outline-none focus:underline">View</Link></td>
                         </tr>
                       ))}
                     </tbody>
@@ -276,9 +289,9 @@ const Admin = () => {
                         <tr key={u._id} className="hover:bg-layer-luxe/20">
                           <td className="py-4 md:py-6 px-4 md:px-8 font-medium">{u.name}</td>
                           <td className="py-4 md:py-6 px-4 md:px-8">{u.email}</td>
-                          <td className="py-4 md:py-6 px-4 md:px-8"><span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${u.role === 'admin' ? 'bg-primary-luxe/20 text-primary-luxe' : 'bg-secondary-luxe/20 text-secondary-luxe'}`}>{u.role}</span></td>
+                          <td className="py-4 md:py-6 px-4 md:px-8"><span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${u.role === 'admin' ? 'bg-[#8B5E3C]/20 text-[#8B5E3C]' : 'bg-secondary-luxe/20 text-secondary-luxe'}`}>{u.role}</span></td>
                           <td className="py-4 md:py-6 px-4 md:px-8">{new Date(u.createdAt).toLocaleDateString()}</td>
-                          <td className="py-4 md:py-6 px-4 md:px-8"><button onClick={() => deleteUser(u._id)} className="text-red-500 hover:text-red-700"><Trash2 size={16} /></button></td>
+                          <td className="py-4 md:py-6 px-4 md:px-8"><button onClick={() => deleteUser(u._id)} className="text-red-500 hover:text-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50 p-1 rounded" aria-label="Delete user"><Trash2 size={16} /></button></td>
                         </tr>
                       ))}
                     </tbody>
@@ -290,11 +303,13 @@ const Admin = () => {
         </div>
       </main>
 
-      {/* Product Modal - remains mostly same, but make it responsive */}
       {showProductModal && (
         <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-bg-luxe rounded-2xl md:rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-8 space-y-5 md:space-y-6">
-            <div className="flex justify-between items-center"><h2 className="text-xl md:text-2xl font-display">{editingProduct ? 'Edit Piece' : 'Enact New Piece'}</h2><button onClick={() => setShowProductModal(false)} className="p-2 hover:bg-layer-luxe rounded-full"><X size={20} /></button></div>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl md:text-2xl font-display">{editingProduct ? 'Edit Piece' : 'Enact New Piece'}</h2>
+              <button onClick={() => setShowProductModal(false)} className="p-2 rounded-full transition-colors hover:bg-[#8B5E3C]/10 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50" aria-label="Close modal"><X size={20} className="text-[#8B5E3C]" /></button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input placeholder="Name" value={productForm.name} onChange={(e) => setProductForm({...productForm, name: e.target.value})} className="input-luxe col-span-1 md:col-span-2" />
               <input placeholder="Price" type="number" value={productForm.price} onChange={(e) => setProductForm({...productForm, price: e.target.value})} className="input-luxe" />
@@ -309,7 +324,7 @@ const Admin = () => {
               </div>
               {productForm.isSale && <input placeholder="Sale Price" type="number" value={productForm.salePrice} onChange={(e) => setProductForm({...productForm, salePrice: e.target.value})} className="input-luxe col-span-1 md:col-span-2" />}
             </div>
-            <button onClick={handleSaveProduct} className="w-full py-4 bg-primary-luxe text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary-luxe">Save Piece</button>
+            <button onClick={handleSaveProduct} className="w-full py-4 bg-[#8B5E3C] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50">Save Piece</button>
           </div>
         </div>
       )}

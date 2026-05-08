@@ -1,42 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { Scale, Check, X, Minus, ShoppingBag, Plus, Trash2 } from 'lucide-react';
+import { Scale, Check, X, Minus, ShoppingBag, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { productAPI } from '../services/api';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProductSkeleton } from '../components/ui/Skeleton';
+import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const Comparison = () => {
   const [searchParams] = useSearchParams();
-  const productIds = searchParams.get('ids')?.split(',') || [];
+  const navigate = useNavigate();
+  const productIds = searchParams.get('ids')?.split(',').filter(id => id) || [];
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  
+  const { addToCart } = useStore();
+  const { user } = useAuth();
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     const fetchComparisonProducts = async () => {
-      if (productIds.length === 0) {
-        // Default: fetch top 3 products
-        try {
-          const { data } = await productAPI.getProducts({ limit: 3 });
-          setProducts(data.data.products);
-        } catch (error) {
-          console.error('Failed to fetch default products', error);
-        } finally {
-          setLoading(false);
-        }
-        return;
-      }
       setLoading(true);
+      setError(false);
       try {
-        const promises = productIds.map(id => productAPI.getProduct(id));
-        const results = await Promise.all(promises);
-        setProducts(results.map(r => r.data.data));
-      } catch (error) {
-        console.error('Failed to fetch comparison products', error);
+        if (productIds.length === 0) {
+          // No products in URL – fetch top 3 or show empty state
+          const { data } = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
+          setProducts(data.data.products);
+        } else {
+          const promises = productIds.map(id => productAPI.getProduct(id));
+          const results = await Promise.all(promises);
+          const validProducts = results.filter(r => r?.data?.data).map(r => r.data.data);
+          setProducts(validProducts);
+          if (validProducts.length === 0 && productIds.length > 0) setError(true);
+        }
+      } catch (err) {
+        console.error('Failed to fetch comparison products', err);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchComparisonProducts();
   }, [productIds]);
+
+  const handleAddToCart = (product) => {
+    if (!user) {
+      showNotification('Please login to add items to cart', 'info');
+      navigate('/auth');
+      return;
+    }
+    addToCart(product, 1, 'M');
+    showNotification(`Added ${product.name} to your collection`, 'success');
+  };
+
+  const removeProduct = (id) => {
+    const newIds = productIds.filter(pid => pid !== id);
+    if (newIds.length === 0) {
+      // Reload with default top products
+      setProducts(prev => prev.filter(p => p._id !== id));
+    } else {
+      navigate(`/comparison?ids=${newIds.join(',')}`);
+    }
+  };
 
   const specs = [
     { label: 'Valuation', getValue: (p) => `$${p.price.toLocaleString()}` },
@@ -48,58 +75,167 @@ const Comparison = () => {
     { label: 'Stock Status', getValue: (p) => p.stock > 0 ? `In Stock (${p.stock})` : 'Out of Stock' },
   ];
 
-  const removeProduct = (id) => {
-    setProducts(prev => prev.filter(p => p._id !== id));
-  };
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <ProductSkeleton /><ProductSkeleton /><ProductSkeleton />
+        </div>
+      </div>
+    );
+  }
 
-  if (loading) return <div className="max-w-7xl mx-auto px-4 py-20"><div className="grid grid-cols-1 md:grid-cols-3 gap-8"><ProductSkeleton /><ProductSkeleton /><ProductSkeleton /></div></div>;
+  if (error || (products.length === 0 && productIds.length > 0)) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe mb-6"><Scale size={32} /></div>
+        <h2 className="text-2xl font-display mb-4">No products to compare</h2>
+        <p className="text-text-luxe/60 mb-8">Try adding product IDs to the URL or browse our collection.</p>
+        <Link to="/products" className="inline-block px-8 py-4 bg-[#8B5E3C] text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#6F472C] transition-colors">
+          Browse Collection
+        </Link>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <p className="text-text-luxe/60 mb-4">No products to compare.</p>
+        <Link to="/products" className="text-[#8B5E3C] hover:underline">View all products</Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div className="space-y-20">
-        <div className="text-center space-y-6">
-          <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe"><Scale size={32} /></div>
-          <h1 className="text-5xl font-display">Piece <span className="italic text-primary-luxe">Analysis</span></h1>
-          <p className="text-text-luxe/60 max-w-md mx-auto">Analytical comparison of your selected essentials to find the perfect addition to your space.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <div className="space-y-12 md:space-y-20">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe">
+            <Scale size={32} />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-display">Piece <span className="italic text-[#8B5E3C]">Analysis</span></h1>
+          <p className="text-text-luxe/60 max-w-md mx-auto text-sm md:text-base">
+            Compare up to 3 pieces side by side to find your perfect match.
+          </p>
         </div>
 
-        <div className="overflow-x-auto pb-12">
-          <table className="w-full border-collapse min-w-[800px]">
-            <thead>
-              <tr className="border-b border-border-luxe/20">
-                <th className="py-12 w-1/4 text-left">
-                  <Link to="/products" className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe flex items-center space-x-2 hover:translate-x-2 transition-transform"><Plus size={12} /><span>Add to analysis</span></Link>
-                </th>
-                {products.map(p => (
-                  <th key={p._id} className="py-12 px-8 text-left group relative">
-                    <button onClick={() => removeProduct(p._id)} className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"><X size={14} className="text-primary-luxe" /></button>
-                    <div className="space-y-6">
-                      <div className="relative aspect-square rounded-2xl overflow-hidden bg-layer-luxe"><img src={p.image} alt={p.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" referrerPolicy="no-referrer" /></div>
-                      <div className="space-y-1"><h3 className="text-lg font-medium">{p.name}</h3><p className="text-sm font-mono font-bold text-primary-luxe">${p.price.toLocaleString()}</p></div>
-                      <button className="w-full py-4 bg-primary-luxe text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-secondary-luxe transition-all">Collect Piece</button>
-                    </div>
+        {/* Comparison Table – responsive with horizontal scroll */}
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-6">
+          <div className="min-w-[800px]">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-border-luxe/20">
+                  <th className="py-6 md:py-10 w-1/4 text-left align-top">
+                    <Link
+                      to="/products"
+                      className="inline-flex items-center space-x-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:text-[#6F472C] hover:translate-x-1 transition-transform"
+                    >
+                      <Plus size={14} /><span>Add another</span>
+                    </Link>
                   </th>
-                ))}
-                {products.length < 3 && [...Array(3 - products.length)].map((_, i) => (
-                  <th key={`empty-${i}`} className="py-12 px-8 text-left opacity-40"><div className="aspect-square rounded-2xl bg-layer-luxe flex items-center justify-center border-2 border-dashed border-border-luxe"><Plus size={32} className="text-border-luxe" /></div></th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-luxe/10">
-              {specs.map((spec, i) => (
-                <tr key={i} className="hover:bg-layer-luxe/10 transition-colors">
-                  <td className="py-10 text-[10px] font-bold uppercase tracking-[0.3em] text-border-luxe">{spec.label}</td>
-                  {products.map(p => <td key={p._id} className="py-10 px-8 text-sm font-medium">{spec.getValue(p)}</td>)}
-                  {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => <td key={idx} className="py-10 px-8 text-sm text-text-luxe/40 italic">—</td>)}
+                  {products.map(p => (
+                    <th key={p._id} className="py-6 md:py-10 px-4 md:px-6 text-left group relative">
+                      <button
+                        onClick={() => removeProduct(p._id)}
+                        className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-50"
+                        aria-label="Remove product"
+                      >
+                        <X size={14} className="text-red-500" />
+                      </button>
+                      <div className="space-y-4 md:space-y-6">
+                        <Link to={`/product/${p._id}`} className="block">
+                          <div className="aspect-square rounded-xl md:rounded-2xl overflow-hidden bg-layer-luxe">
+                            <img src={p.image} alt={p.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" referrerPolicy="no-referrer" />
+                          </div>
+                        </Link>
+                        <div className="space-y-1">
+                          <h3 className="text-sm md:text-lg font-medium line-clamp-2">{p.name}</h3>
+                          <p className="text-sm md:text-base font-mono font-bold text-[#8B5E3C]">${p.price.toLocaleString()}</p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleAddToCart(p)}
+                            className="w-full py-2 md:py-3 bg-[#8B5E3C] text-white rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors flex items-center justify-center space-x-2"
+                          >
+                            <ShoppingBag size={14} /><span>Add to Cart</span>
+                          </button>
+                          <Link
+                            to={`/product/${p._id}`}
+                            className="w-full py-2 md:py-3 border border-border-luxe rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest text-center hover:bg-layer-luxe transition-colors"
+                          >
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    </th>
+                  ))}
+                  {products.length < 3 && [...Array(3 - products.length)].map((_, i) => (
+                    <th key={`empty-${i}`} className="py-6 md:py-10 px-4 md:px-6 text-left opacity-40">
+                      <div className="aspect-square rounded-xl md:rounded-2xl bg-layer-luxe flex items-center justify-center border-2 border-dashed border-border-luxe">
+                        <Plus size={24} className="text-border-luxe" />
+                      </div>
+                      <div className="text-center text-xs text-text-luxe/40 mt-4">Add product</div>
+                    </th>
+                  ))}
                 </tr>
-              ))}
-              <tr>
-                <td className="py-10 text-[10px] font-bold uppercase tracking-[0.3em] text-border-luxe">Actions</td>
-                {products.map(p => <td key={p._id} className="py-10 px-8"><button className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe hover:underline">View Details</button></td>)}
-                {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => <td key={idx} className="py-10 px-8"></td>)}
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border-luxe/10">
+                {specs.map((spec, i) => (
+                  <tr key={i} className="hover:bg-layer-luxe/10 transition-colors">
+                    <td className="py-4 md:py-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-border-luxe align-top">
+                      {spec.label}
+                    </td>
+                    {products.map(p => (
+                      <td key={p._id} className="py-4 md:py-6 px-4 md:px-6 text-xs md:text-sm font-medium">
+                        {spec.getValue(p)}
+                      </td>
+                    ))}
+                    {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => (
+                      <td key={idx} className="py-4 md:py-6 px-4 md:px-6 text-sm text-text-luxe/40 italic">—</td>
+                    ))}
+                  </tr>
+                ))}
+                {/* Action row (optional extra) */}
+                <tr className="hover:bg-layer-luxe/10 transition-colors">
+                  <td className="py-4 md:py-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-border-luxe">Actions</td>
+                  {products.map(p => (
+                    <td key={p._id} className="py-4 md:py-6 px-4 md:px-6">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                          onClick={() => handleAddToCart(p)}
+                          className="px-3 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-[#8B5E3C] text-white rounded-lg hover:bg-[#6F472C] transition-colors"
+                        >
+                          Buy Now
+                        </button>
+                        <Link
+                          to={`/product/${p._id}`}
+                          className="px-3 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest border border-border-luxe rounded-lg hover:bg-layer-luxe transition-colors text-center"
+                        >
+                          Details
+                        </Link>
+                      </div>
+                    </td>
+                  ))}
+                  {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => (
+                    <td key={idx} className="py-4 md:py-6 px-4 md:px-6">  </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Footer link */}
+        <div className="text-center pt-8">
+          <Link
+            to="/products"
+            className="inline-flex items-center space-x-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:text-[#6F472C] transition-colors"
+          >
+            <span>Browse more pieces</span>
+            <Plus size={12} />
+          </Link>
         </div>
       </div>
     </div>

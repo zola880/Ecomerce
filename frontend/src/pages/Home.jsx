@@ -62,7 +62,7 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
               <Link
                 to="/products"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-bold uppercase tracking-wider hover:bg-secondary-luxe hover:text-white transition-all"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#8B5E3C] text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#6F472C] transition-all shadow-lg"
               >
                 Explore Archive <ArrowRight size={16} />
               </Link>
@@ -83,15 +83,15 @@ const Home = () => {
       </section>
 
       {/* Featured Products Carousel */}
-      <section className="py-24 px-4 max-w-7xl mx-auto">
+      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <span className="text-xs font-bold uppercase tracking-[0.3em] text-secondary-luxe">Curated Selection</span>
           <h2 className="text-4xl md:text-5xl font-display mt-2">Signature Pieces</h2>
-          <div className="w-16 h-0.5 bg-highlight-luxe mx-auto mt-4" />
+          <div className="w-16 h-0.5 bg-[#8B5E3C] mx-auto mt-4" />
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[...Array(4)].map((_, i) => <ProductSkeleton key={i} />)}
           </div>
         ) : (
@@ -102,7 +102,7 @@ const Home = () => {
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {Array.from({ length: Math.ceil(featuredProducts.length / 4) }).map((_, pageIndex) => (
-                  <div key={pageIndex} className="w-full flex-shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+                  <div key={pageIndex} className="w-full flex-shrink-0 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-4">
                     {featuredProducts.slice(pageIndex * 4, pageIndex * 4 + 4).map((product, i) => (
                       <motion.div
                         key={product._id}
@@ -122,22 +122,25 @@ const Home = () => {
               <>
                 <button
                   onClick={prevSlide}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-luxe hover:text-white transition-all"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 -ml-2 md:-ml-4 w-8 h-8 md:w-10 md:h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#8B5E3C] hover:text-white transition-all z-10"
+                  aria-label="Previous slide"
                 >
-                  <ChevronLeft size={20} />
+                  <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-luxe hover:text-white transition-all"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 -mr-2 md:-mr-4 w-8 h-8 md:w-10 md:h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#8B5E3C] hover:text-white transition-all z-10"
+                  aria-label="Next slide"
                 >
-                  <ChevronRight size={20} />
+                  <ChevronRight size={18} />
                 </button>
                 <div className="flex justify-center gap-2 mt-8">
                   {Array.from({ length: Math.ceil(featuredProducts.length / 4) }).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentSlide(idx)}
-                      className={`w-2 h-2 rounded-full transition-all ${currentSlide === idx ? 'w-6 bg-primary-luxe' : 'bg-border-luxe'}`}
+                      className={`h-2 rounded-full transition-all ${currentSlide === idx ? 'w-6 bg-[#8B5E3C]' : 'w-2 bg-border-luxe'}`}
+                      aria-label={`Go to slide ${idx + 1}`}
                     />
                   ))}
                 </div>
@@ -148,7 +151,7 @@ const Home = () => {
         <div className="text-center mt-12">
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 px-8 py-3 border border-border-luxe rounded-full text-sm font-bold uppercase tracking-wider hover:bg-primary-luxe hover:text-white transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 md:px-8 md:py-3 border border-[#8B5E3C] text-[#8B5E3C] rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#8B5E3C] hover:text-white transition-all"
           >
             View All <ArrowRight size={16} />
           </Link>
@@ -156,11 +159,12 @@ const Home = () => {
       </section>
 
       {/* Lifestyle Banner */}
-      <div className="relative h-[70vh] overflow-hidden">
+      <div className="relative h-[50vh] md:h-[70vh] overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1493663284032-c4b4bb4d5a00?q=80&w=2070&auto=format"
           alt="Luxury interior"
           className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
@@ -170,31 +174,31 @@ const Home = () => {
       </div>
 
       {/* Philosophy Cards */}
-      <section className="py-24 bg-bg-luxe">
+      <section className="py-16 md:py-24 bg-bg-luxe">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 md:mb-16">
             <span className="text-xs font-bold uppercase tracking-[0.3em] text-secondary-luxe">Our Pillars</span>
             <h2 className="text-4xl md:text-5xl font-display mt-2">Design Philosophy</h2>
-            <div className="w-16 h-0.5 bg-highlight-luxe mx-auto mt-4" />
+            <div className="w-16 h-0.5 bg-[#8B5E3C] mx-auto mt-4" />
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-2xl bg-layer-luxe/50 hover:shadow-xl transition-all group">
-              <div className="w-14 h-14 mx-auto bg-primary-luxe/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary-luxe transition-all">
-                <Zap size={28} className="text-primary-luxe group-hover:text-white" />
+            <div className="text-center p-6 md:p-8 rounded-2xl bg-layer-luxe/50 hover:shadow-xl transition-all group">
+              <div className="w-14 h-14 mx-auto bg-[#8B5E3C]/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#8B5E3C] transition-all">
+                <Zap size={28} className="text-[#8B5E3C] group-hover:text-white" />
               </div>
               <h3 className="text-xl font-display mb-2">Material Honesty</h3>
               <p className="text-text-luxe/60 text-sm">We believe in raw materials that speak for themselves – oak, linen, stone.</p>
             </div>
-            <div className="text-center p-8 rounded-2xl bg-layer-luxe/50 hover:shadow-xl transition-all group">
-              <div className="w-14 h-14 mx-auto bg-primary-luxe/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary-luxe transition-all">
-                <Globe size={28} className="text-primary-luxe group-hover:text-white" />
+            <div className="text-center p-6 md:p-8 rounded-2xl bg-layer-luxe/50 hover:shadow-xl transition-all group">
+              <div className="w-14 h-14 mx-auto bg-[#8B5E3C]/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#8B5E3C] transition-all">
+                <Globe size={28} className="text-[#8B5E3C] group-hover:text-white" />
               </div>
               <h3 className="text-xl font-display mb-2">Global Integrity</h3>
               <p className="text-text-luxe/60 text-sm">Sourced from 64 countries with ethical standards and artisanal respect.</p>
             </div>
-            <div className="text-center p-8 rounded-2xl bg-layer-luxe/50 hover:shadow-xl transition-all group">
-              <div className="w-14 h-14 mx-auto bg-primary-luxe/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-primary-luxe transition-all">
-                <Heart size={28} className="text-primary-luxe group-hover:text-white" />
+            <div className="text-center p-6 md:p-8 rounded-2xl bg-layer-luxe/50 hover:shadow-xl transition-all group">
+              <div className="w-14 h-14 mx-auto bg-[#8B5E3C]/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-[#8B5E3C] transition-all">
+                <Heart size={28} className="text-[#8B5E3C] group-hover:text-white" />
               </div>
               <h3 className="text-xl font-display mb-2">Future Heritage</h3>
               <p className="text-text-luxe/60 text-sm">Designed for generations, not seasons. Sustainable, durable, timeless.</p>
@@ -203,31 +207,35 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Newsletter Signup */}
-      <section className="py-20 bg-primary-luxe text-white">
+      {/* Newsletter Signup – using brand colors */}
+      <section className="py-16 md:py-20 bg-[#8B5E3C] text-white">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h3 className="text-3xl md:text-4xl font-display">Join the <span className="italic">Sphere</span></h3>
-          <p className="text-white/70 mt-4 mb-8">Receive early access to new arrivals and exclusive offers.</p>
+          <p className="text-white/80 mt-4 mb-8">Receive early access to new arrivals and exclusive offers.</p>
           <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
             <input
               type="email"
               placeholder="Your email address"
-              className="flex-1 px-6 py-4 bg-white/10 backdrop-blur rounded-full border border-white/30 focus:outline-none focus:border-white placeholder:text-white/50 text-white"
+              className="flex-1 px-6 py-4 bg-white/20 backdrop-blur rounded-full border border-white/30 focus:outline-none focus:border-white placeholder:text-white/70 text-white"
+              required
             />
-            <button className="px-8 py-4 bg-white text-primary-luxe rounded-full hover:bg-secondary-luxe hover:text-white transition-all flex items-center justify-center gap-2">
+            <button className="px-8 py-4 bg-white text-[#8B5E3C] rounded-full hover:bg-[#6F472C] hover:text-white transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-xs">
               Subscribe <Mail size={16} />
             </button>
           </form>
-          <p className="text-xs text-white/40 mt-6">No spam, only inspiration. Unsubscribe anytime.</p>
+          <p className="text-xs text-white/50 mt-6">No spam, only inspiration. Unsubscribe anytime.</p>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 text-center bg-bg-luxe">
+      <section className="py-16 md:py-20 text-center bg-bg-luxe">
         <div className="max-w-sm mx-auto px-4">
           <Star size={32} className="mx-auto text-highlight-luxe mb-4" />
           <h4 className="text-2xl font-display">Experience the Archive</h4>
-          <Link to="/products" className="inline-block mt-6 px-8 py-3 bg-primary-luxe text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-secondary-luxe transition-all">
+          <Link
+            to="/products"
+            className="inline-block mt-6 px-8 py-3 bg-[#8B5E3C] text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#6F472C] transition-all shadow-md"
+          >
             Shop Now
           </Link>
         </div>

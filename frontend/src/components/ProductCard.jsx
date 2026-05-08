@@ -45,7 +45,7 @@ const ProductCard = ({ product }) => {
         to={`/product/${productId}`}
         className="block relative overflow-hidden rounded-xl sm:rounded-2xl md:rounded-[2rem] bg-layer-luxe aspect-[3/4]"
       >
-        {/* Badges – smaller on mobile */}
+        {/* Badges */}
         <div className="absolute top-2 left-2 sm:top-4 sm:left-4 md:top-6 md:left-6 z-10 flex flex-col gap-1 sm:gap-2">
           {product.isNew && (
             <div className="bg-white/90 backdrop-blur text-primary-luxe text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] md:tracking-[0.3em] px-2 py-0.5 sm:px-3 sm:py-1 md:px-4 md:py-1.5 rounded-full shadow-sm flex items-center space-x-1">
@@ -60,11 +60,15 @@ const ProductCard = ({ product }) => {
           )}
         </div>
 
-        {/* Action Buttons – smaller on mobile, still hidden until hover (touch devices will show on tap) */}
-        <div className="absolute inset-x-0 bottom-2 sm:bottom-4 md:bottom-8 z-10 flex justify-center items-center gap-2 sm:gap-3 md:gap-4 opacity-0 translate-y-2 md:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+        {/* Action Buttons – visible on hover for desktop, always visible on mobile */}
+        <div className="absolute inset-x-0 bottom-2 sm:bottom-4 md:bottom-8 z-10 flex justify-center items-center gap-2 sm:gap-3 md:gap-4 
+                        opacity-0 translate-y-2 md:translate-y-4 
+                        group-hover:opacity-100 group-hover:translate-y-0 
+                        max-sm:opacity-100 max-sm:translate-y-0    /* force visible on mobile */
+                        transition-all duration-500">
           <button
             onClick={handleAddToCart}
-            className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 bg-primary-luxe text-white rounded-full flex items-center justify-center hover:bg-secondary-luxe transition-all shadow-lg hover:scale-105 active:scale-95"
+            className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 bg-[#8B5E3C] text-white rounded-full flex items-center justify-center hover:bg-[#6F472C] transition-all shadow-lg hover:scale-105 active:scale-95"
             title="Add to Collection"
           >
             <ShoppingBag size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
@@ -72,7 +76,7 @@ const ProductCard = ({ product }) => {
           <button
             onClick={handleWishlist}
             className={`w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 ${
-              isInWishlist ? 'bg-secondary-luxe text-white' : 'bg-white text-primary-luxe hover:bg-layer-luxe'
+              isInWishlist ? 'bg-[#8B5E3C] text-white' : 'bg-[#8B5E3C] text-white hover:bg-[#6F472C]'
             }`}
             title="Mark as Aspiration"
           >
@@ -80,26 +84,25 @@ const ProductCard = ({ product }) => {
           </button>
           <Link
             to={`/product/${productId}`}
-            className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 transition-all hover:bg-white hover:text-primary-luxe"
+            className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 bg-[#8B5E3C] text-white rounded-full flex items-center justify-center border border-white/20 transition-all hover:bg-[#6F472C]"
             title="Quick View"
           >
             <Eye size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
           </Link>
         </div>
 
-        {/* Image */}
+        {/* Image – original colors (no grayscale) */}
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
 
-        {/* Overlay */}
         <div className="absolute inset-0 bg-primary-luxe/5 opacity-0 group-hover:opacity-100 transition-opacity" />
       </Link>
 
-      {/* Text area – smaller padding and font on mobile */}
+      {/* Text area */}
       <div className="py-3 sm:py-5 md:py-8 space-y-1 sm:space-y-2 md:space-y-3 px-1 sm:px-2">
         <div className="flex justify-between items-start gap-2">
           <div className="space-y-0.5 sm:space-y-1 md:space-y-1">
