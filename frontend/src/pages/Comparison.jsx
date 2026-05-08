@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Scale, Check, X, ShoppingBag, Plus } from 'lucide-react';
 import { productAPI } from '../services/api';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
@@ -10,11 +10,16 @@ import { useNotification } from '../context/NotificationContext';
 const Comparison = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const productIds = searchParams.get('ids')?.split(',').filter(id => id) || [];
+
+  // Memoize productIds to avoid recreating the array on every render
+  const productIds = useMemo(() => {
+    return searchParams.get('ids')?.split(',').filter(id => id) || [];
+  }, [searchParams]);
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // store error message
-
+  const [error, setError] = useState(null);
+  
   const { addToCart } = useStore();
   const { user } = useAuth();
   const { showNotification } = useNotification();
@@ -25,37 +30,28 @@ const Comparison = () => {
       setError(null);
       try {
         if (productIds.length === 0) {
-          // Fetch first 3 products as default
-          const response = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
-          // Safely extract products
-          const fetchedProducts = response?.data?.data?.products || response?.data?.products || [];
-          if (fetchedProducts.length === 0) {
-            setError('No products available to compare.');
-          } else {
-            setProducts(fetchedProducts.slice(0, 3));
-          }
+          const { data } = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
+          const fetched = data?.data?.products || data?.products || [];
+          setProducts(fetched.slice(0, 3));
         } else {
-          // Fetch each product by ID
           const promises = productIds.map(id => productAPI.getProduct(id));
           const results = await Promise.all(promises);
-          const validProducts = results
-            .map(r => r?.data?.data || r?.data) // handle both wrapper structures
-            .filter(p => p && p._id);
-          if (validProducts.length === 0) {
+          const valid = results.map(r => r?.data?.data || r?.data).filter(p => p && p._id);
+          setProducts(valid);
+          if (valid.length === 0 && productIds.length > 0) {
             setError('No valid products found for the provided IDs.');
-          } else {
-            setProducts(validProducts);
           }
         }
       } catch (err) {
         console.error('Comparison fetch error:', err);
-        setError(err.response?.data?.message || 'Failed to load comparison data. Please try again.');
+        setError(err.response?.data?.message || 'Failed to load comparison data.');
       } finally {
         setLoading(false);
       }
     };
+
     fetchComparisonProducts();
-  }, [productIds]);
+  }, [productIds]); // productIds reference is stable now
 
   const handleAddToCart = (product) => {
     if (!user) {
@@ -70,12 +66,7 @@ const Comparison = () => {
   const removeProduct = (id) => {
     const newIds = productIds.filter(pid => pid !== id);
     if (newIds.length === 0) {
-      // Remove from local state (will trigger fallback fetch)
-      setProducts(prev => prev.filter(p => p._id !== id));
-      // If no products left, show empty state
-      if (products.length === 1) {
-        setError('No products to compare.');
-      }
+      navigate('/comparison'); // clear URL
     } else {
       navigate(`/comparison?ids=${newIds.join(',')}`);
     }
@@ -132,13 +123,9 @@ const Comparison = () => {
       <div className="space-y-12 md:space-y-20">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe">
-            <Scale size={32} />
-          </div>
+          <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe"><Scale size={32} /></div>
           <h1 className="text-4xl md:text-5xl font-display">Piece <span className="italic text-[#8B5E3C]">Analysis</span></h1>
-          <p className="text-text-luxe/60 max-w-md mx-auto text-sm md:text-base">
-            Compare up to 3 pieces side by side to find your perfect match.
-          </p>
+          <p className="text-text-luxe/60 max-w-md mx-auto text-sm md:text-base">Compare up to 3 pieces side by side.</p>
         </div>
 
         {/* Comparison Table – responsive horizontal scroll */}
@@ -148,20 +135,13 @@ const Comparison = () => {
               <thead>
                 <tr className="border-b border-border-luxe/20">
                   <th className="py-6 md:py-10 w-1/4 text-left align-top">
-                    <Link
-                      to="/products"
-                      className="inline-flex items-center space-x-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:text-[#6F472C] hover:translate-x-1 transition-transform"
-                    >
+                    <Link to="/products" className="inline-flex items-center space-x-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:text-[#6F472C] hover:translate-x-1 transition-transform">
                       <Plus size={14} /><span>Add another</span>
                     </Link>
                   </th>
                   {products.map(p => (
                     <th key={p._id} className="py-6 md:py-10 px-4 md:px-6 text-left group relative">
-                      <button
-                        onClick={() => removeProduct(p._id)}
-                        className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-50"
-                        aria-label="Remove product"
-                      >
+                      <button onClick={() => removeProduct(p._id)} className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-50">
                         <X size={14} className="text-red-500" />
                       </button>
                       <div className="space-y-4 md:space-y-6">
@@ -175,16 +155,10 @@ const Comparison = () => {
                           <p className="text-sm md:text-base font-mono font-bold text-[#8B5E3C]">${p.price?.toLocaleString() || '—'}</p>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() => handleAddToCart(p)}
-                            className="w-full py-2 md:py-3 bg-[#8B5E3C] text-white rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors flex items-center justify-center space-x-2"
-                          >
+                          <button onClick={() => handleAddToCart(p)} className="w-full py-2 md:py-3 bg-[#8B5E3C] text-white rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-colors flex items-center justify-center space-x-2">
                             <ShoppingBag size={14} /><span>Add to Cart</span>
                           </button>
-                          <Link
-                            to={`/product/${p._id}`}
-                            className="w-full py-2 md:py-3 border border-border-luxe rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest text-center hover:bg-layer-luxe transition-colors"
-                          >
+                          <Link to={`/product/${p._id}`} className="w-full py-2 md:py-3 border border-border-luxe rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest text-center hover:bg-layer-luxe transition-colors">
                             View Details
                           </Link>
                         </div>
@@ -204,57 +178,31 @@ const Comparison = () => {
               <tbody className="divide-y divide-border-luxe/10">
                 {specs.map((spec, i) => (
                   <tr key={i} className="hover:bg-layer-luxe/10 transition-colors">
-                    <td className="py-4 md:py-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-border-luxe align-top">
-                      {spec.label}
-                    </td>
-                    {products.map(p => (
-                      <td key={p._id} className="py-4 md:py-6 px-4 md:px-6 text-xs md:text-sm font-medium">
-                        {spec.getValue(p)}
-                      </td>
-                    ))}
-                    {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => (
-                      <td key={idx} className="py-4 md:py-6 px-4 md:px-6 text-sm text-text-luxe/40 italic">—</td>
-                    ))}
+                    <td className="py-4 md:py-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-border-luxe align-top">{spec.label}</td>
+                    {products.map(p => <td key={p._id} className="py-4 md:py-6 px-4 md:px-6 text-xs md:text-sm font-medium">{spec.getValue(p)}</td>)}
+                    {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => <td key={idx} className="py-4 md:py-6 px-4 md:px-6 text-sm text-text-luxe/40 italic">—</td>)}
                   </tr>
                 ))}
-                {/* Action row */}
                 <tr className="hover:bg-layer-luxe/10 transition-colors">
                   <td className="py-4 md:py-6 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-border-luxe">Actions</td>
                   {products.map(p => (
                     <td key={p._id} className="py-4 md:py-6 px-4 md:px-6">
                       <div className="flex flex-col sm:flex-row gap-2">
-                        <button
-                          onClick={() => handleAddToCart(p)}
-                          className="px-3 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-[#8B5E3C] text-white rounded-lg hover:bg-[#6F472C] transition-colors"
-                        >
-                          Buy Now
-                        </button>
-                        <Link
-                          to={`/product/${p._id}`}
-                          className="px-3 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest border border-border-luxe rounded-lg hover:bg-layer-luxe transition-colors text-center"
-                        >
-                          Details
-                        </Link>
+                        <button onClick={() => handleAddToCart(p)} className="px-3 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-[#8B5E3C] text-white rounded-lg hover:bg-[#6F472C] transition-colors">Buy Now</button>
+                        <Link to={`/product/${p._id}`} className="px-3 py-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest border border-border-luxe rounded-lg hover:bg-layer-luxe transition-colors text-center">Details</Link>
                       </div>
                     </td>
                   ))}
-                  {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => (
-                    <td key={idx} className="py-4 md:py-6 px-4 md:px-6"></td>
-                  ))}
+                  {products.length < 3 && [...Array(3 - products.length)].map((_, idx) => <td key={idx} className="py-4 md:py-6 px-4 md:px-6"> </td>)}
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Footer link */}
         <div className="text-center pt-8">
-          <Link
-            to="/products"
-            className="inline-flex items-center space-x-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:text-[#6F472C] transition-colors"
-          >
-            <span>Browse more pieces</span>
-            <Plus size={12} />
+          <Link to="/products" className="inline-flex items-center space-x-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-secondary-luxe hover:text-[#6F472C] transition-colors">
+            <span>Browse more pieces</span><Plus size={12} />
           </Link>
         </div>
       </div>
