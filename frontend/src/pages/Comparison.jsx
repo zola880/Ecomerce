@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Scale, Check, X, ShoppingBag, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Scale, X, ShoppingBag, Plus } from 'lucide-react';
 import { productAPI } from '../services/api';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProductSkeleton } from '../components/ui/Skeleton';
@@ -11,7 +11,6 @@ const Comparison = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Memoize productIds to avoid recreating the array on every render
   const productIds = useMemo(() => {
     return searchParams.get('ids')?.split(',').filter(id => id) || [];
   }, [searchParams]);
@@ -19,12 +18,16 @@ const Comparison = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const fetchedRef = useRef(false); // ← prevent multiple fetches
+
   const { addToCart } = useStore();
   const { user } = useAuth();
   const { showNotification } = useNotification();
 
   useEffect(() => {
+    if (fetchedRef.current) return;     // already fetched once
+    fetchedRef.current = true;
+
     const fetchComparisonProducts = async () => {
       setLoading(true);
       setError(null);
@@ -51,7 +54,7 @@ const Comparison = () => {
     };
 
     fetchComparisonProducts();
-  }, [productIds]); // productIds reference is stable now
+  }, [productIds]); // effect still runs on productIds change, but the ref stops the second run
 
   const handleAddToCart = (product) => {
     if (!user) {
@@ -66,10 +69,12 @@ const Comparison = () => {
   const removeProduct = (id) => {
     const newIds = productIds.filter(pid => pid !== id);
     if (newIds.length === 0) {
-      navigate('/comparison'); // clear URL
+      navigate('/comparison'); // clears URL
     } else {
       navigate(`/comparison?ids=${newIds.join(',')}`);
     }
+    // reset the fetch flag when the URL changes
+    fetchedRef.current = false;
   };
 
   const specs = [
@@ -110,7 +115,7 @@ const Comparison = () => {
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe mb-6"><Scale size={32} /></div>
         <h2 className="text-2xl font-display mb-4">No products to compare</h2>
-        <p className="text-text-luxe/60 mb-8">Add product IDs to the URL (e.g., `?ids=id1,id2,id3`) or browse our collection.</p>
+        <p className="text-text-luxe/60 mb-8">Add product IDs to the URL or browse our collection.</p>
         <Link to="/products" className="inline-block px-8 py-4 bg-[#8B5E3C] text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#6F472C] transition-colors">
           Browse Collection
         </Link>
@@ -128,7 +133,6 @@ const Comparison = () => {
           <p className="text-text-luxe/60 max-w-md mx-auto text-sm md:text-base">Compare up to 3 pieces side by side.</p>
         </div>
 
-        {/* Comparison Table – responsive horizontal scroll */}
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-6">
           <div className="min-w-[800px]">
             <table className="w-full border-collapse">
