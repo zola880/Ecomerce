@@ -24,37 +24,45 @@ const Comparison = () => {
   const { user } = useAuth();
   const { showNotification } = useNotification();
 
-  useEffect(() => {
-    if (fetchedRef.current) return;     // already fetched once
-    fetchedRef.current = true;
+ useEffect(() => {
+  const fetchComparisonProducts = async () => {
+    setLoading(true);
+    setError(null);
 
-    const fetchComparisonProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        if (productIds.length === 0) {
-          const { data } = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
-          const fetched = data?.data?.products || data?.products || [];
-          setProducts(fetched.slice(0, 3));
-        } else {
-          const promises = productIds.map(id => productAPI.getProduct(id));
-          const results = await Promise.all(promises);
-          const valid = results.map(r => r?.data?.data || r?.data).filter(p => p && p._id);
-          setProducts(valid);
-          if (valid.length === 0 && productIds.length > 0) {
-            setError('No valid products found for the provided IDs.');
-          }
-        }
-      } catch (err) {
-        console.error('Comparison fetch error:', err);
-        setError(err.response?.data?.message || 'Failed to load comparison data.');
-      } finally {
-        setLoading(false);
+    try {
+      if (productIds.length === 0) {
+        const { data } = await productAPI.getProducts({
+          limit: 3,
+          sort: 'Rating'
+        });
+
+        const fetched =
+          data?.data?.products ||
+          data?.products ||
+          [];
+
+        setProducts(fetched.slice(0, 3));
+      } else {
+        const results = await Promise.all(
+          productIds.map(id => productAPI.getProduct(id))
+        );
+
+        const valid = results
+          .map(r => r?.data?.data || r?.data)
+          .filter(p => p && p._id);
+
+        setProducts(valid);
       }
-    };
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load comparison data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchComparisonProducts();
-  }, [productIds]); // effect still runs on productIds change, but the ref stops the second run
+  fetchComparisonProducts();
+}, [searchParams.toString()]); // effect still runs on productIds change, but the ref stops the second run
 
   const handleAddToCart = (product) => {
     if (!user) {
