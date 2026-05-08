@@ -30,7 +30,8 @@ export default function App() {
           <Router>
             <Layout>
               <Routes>
-                <Route path="/" element={<Home />} />
+                {/* Landing page changed to Products */}
+                <Route path="/" element={<Products />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
@@ -46,6 +47,8 @@ export default function App() {
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/comparison" element={<Comparison />} />
                 <Route path="/brands" element={<Brands />} />
+                {/* Optional: original home page accessible at /home if you want to keep it */}
+                <Route path="/home" element={<Home />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
