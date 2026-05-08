@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Scale, Check, X, Minus, ShoppingBag, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Scale, Check, X, ShoppingBag, Plus } from 'lucide-react';
 import { productAPI } from '../services/api';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProductSkeleton } from '../components/ui/Skeleton';
@@ -13,8 +13,8 @@ const Comparison = () => {
   const productIds = searchParams.get('ids')?.split(',').filter(id => id) || [];
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  
+  const [error, setError] = useState(null); // store error message
+
   const { addToCart } = useStore();
   const { user } = useAuth();
   const { showNotification } = useNotification();
@@ -22,21 +22,34 @@ const Comparison = () => {
   useEffect(() => {
     const fetchComparisonProducts = async () => {
       setLoading(true);
-      setError(false);
+      setError(null);
       try {
         if (productIds.length === 0) {
-          const { data } = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
-          setProducts(data.data.products);
+          // Fetch first 3 products as default
+          const response = await productAPI.getProducts({ limit: 3, sort: 'Rating' });
+          // Safely extract products
+          const fetchedProducts = response?.data?.data?.products || response?.data?.products || [];
+          if (fetchedProducts.length === 0) {
+            setError('No products available to compare.');
+          } else {
+            setProducts(fetchedProducts.slice(0, 3));
+          }
         } else {
+          // Fetch each product by ID
           const promises = productIds.map(id => productAPI.getProduct(id));
           const results = await Promise.all(promises);
-          const validProducts = results.filter(r => r?.data?.data).map(r => r.data.data);
-          setProducts(validProducts);
-          if (validProducts.length === 0 && productIds.length > 0) setError(true);
+          const validProducts = results
+            .map(r => r?.data?.data || r?.data) // handle both wrapper structures
+            .filter(p => p && p._id);
+          if (validProducts.length === 0) {
+            setError('No valid products found for the provided IDs.');
+          } else {
+            setProducts(validProducts);
+          }
         }
       } catch (err) {
-        console.error('Failed to fetch comparison products', err);
-        setError(true);
+        console.error('Comparison fetch error:', err);
+        setError(err.response?.data?.message || 'Failed to load comparison data. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -57,15 +70,20 @@ const Comparison = () => {
   const removeProduct = (id) => {
     const newIds = productIds.filter(pid => pid !== id);
     if (newIds.length === 0) {
+      // Remove from local state (will trigger fallback fetch)
       setProducts(prev => prev.filter(p => p._id !== id));
+      // If no products left, show empty state
+      if (products.length === 1) {
+        setError('No products to compare.');
+      }
     } else {
       navigate(`/comparison?ids=${newIds.join(',')}`);
     }
   };
 
   const specs = [
-    { label: 'Valuation', getValue: (p) => `$${p.price.toLocaleString()}` },
-    { label: 'Sphere', getValue: (p) => p.category },
+    { label: 'Valuation', getValue: (p) => `$${p.price?.toLocaleString() || '—'}` },
+    { label: 'Sphere', getValue: (p) => p.category || '—' },
     { label: 'Curation Date', getValue: (p) => p.isNew ? 'Released 2026' : 'Classic Portfolio' },
     { label: 'Collector Sentiment', getValue: (p) => `${p.rating || 4.5} / 5.0` },
     { label: 'Exclusivity', getValue: (p) => p.isBestSeller ? 'High Volume Pursuit' : 'Limited Edition' },
@@ -83,12 +101,12 @@ const Comparison = () => {
     );
   }
 
-  if (error || (products.length === 0 && productIds.length > 0)) {
+  if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe mb-6"><Scale size={32} /></div>
-        <h2 className="text-2xl font-display mb-4">No products to compare</h2>
-        <p className="text-text-luxe/60 mb-8">Try adding product IDs to the URL or browse our collection.</p>
+        <h2 className="text-2xl font-display mb-4">Comparison Unavailable</h2>
+        <p className="text-text-luxe/60 mb-8">{error}</p>
         <Link to="/products" className="inline-block px-8 py-4 bg-[#8B5E3C] text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#6F472C] transition-colors">
           Browse Collection
         </Link>
@@ -99,8 +117,12 @@ const Comparison = () => {
   if (products.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <p className="text-text-luxe/60 mb-4">No products to compare.</p>
-        <Link to="/products" className="text-[#8B5E3C] hover:underline">View all products</Link>
+        <div className="inline-flex p-4 bg-layer-luxe rounded-3xl text-primary-luxe mb-6"><Scale size={32} /></div>
+        <h2 className="text-2xl font-display mb-4">No products to compare</h2>
+        <p className="text-text-luxe/60 mb-8">Add product IDs to the URL (e.g., `?ids=id1,id2,id3`) or browse our collection.</p>
+        <Link to="/products" className="inline-block px-8 py-4 bg-[#8B5E3C] text-white rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#6F472C] transition-colors">
+          Browse Collection
+        </Link>
       </div>
     );
   }
@@ -119,7 +141,7 @@ const Comparison = () => {
           </p>
         </div>
 
-        {/* Comparison Table – responsive with horizontal scroll */}
+        {/* Comparison Table – responsive horizontal scroll */}
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-6">
           <div className="min-w-[800px]">
             <table className="w-full border-collapse">
@@ -150,7 +172,7 @@ const Comparison = () => {
                         </Link>
                         <div className="space-y-1">
                           <h3 className="text-sm md:text-lg font-medium line-clamp-2">{p.name}</h3>
-                          <p className="text-sm md:text-base font-mono font-bold text-[#8B5E3C]">${p.price.toLocaleString()}</p>
+                          <p className="text-sm md:text-base font-mono font-bold text-[#8B5E3C]">${p.price?.toLocaleString() || '—'}</p>
                         </div>
                         <div className="flex flex-col gap-2">
                           <button
