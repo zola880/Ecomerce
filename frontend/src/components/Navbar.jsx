@@ -155,7 +155,7 @@ const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 Main Navbar Component
+// 🔹 Main Navbar Component – Sticky top on all devices
 // ─────────────────────────────────────────────────────────────
 const Navbar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
