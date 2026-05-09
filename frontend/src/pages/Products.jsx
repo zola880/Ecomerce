@@ -82,7 +82,7 @@ const Products = () => {
   return (
     <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-24 md:pb-40">
       <div className="space-y-8 md:space-y-12">
-        {/* Header */}
+        {/* Header – unchanged on desktop, slight padding adjustments on mobile */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border-luxe/10 pb-8 md:pb-12">
           <div className="space-y-2 md:space-y-4">
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-secondary-luxe">Curated Archives</span>
@@ -97,7 +97,6 @@ const Products = () => {
                 <List size={18} />
               </button>
             </div>
-            {/* Filter button – brand color applied */}
             <button 
               onClick={() => setShowFilters(!showFilters)} 
               className={`flex items-center space-x-2 px-5 py-3 md:px-8 md:py-4 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
@@ -112,7 +111,7 @@ const Products = () => {
         </div>
 
         <div className="flex gap-6 lg:gap-16">
-          {/* Desktop Sidebar (visible when showFilters true on lg) */}
+          {/* Desktop Sidebar – unchanged */}
           <motion.aside
             initial={false}
             animate={{ width: showFilters ? 280 : 0, opacity: showFilters ? 1 : 0 }}
@@ -143,7 +142,7 @@ const Products = () => {
             </div>
           </motion.aside>
 
-          {/* Product Grid */}
+          {/* Product Grid – responsive gaps, no horizontal scroll (grid wraps naturally) */}
           <div className="flex-1">
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
@@ -155,10 +154,14 @@ const Products = () => {
                   {products.map(product => <ProductCard key={product._id} product={product} />)}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination – larger touch targets on mobile */}
                 {pagination.pages > 1 && (
                   <div className="flex justify-center items-center gap-2 mt-12 md:mt-16 pt-8 border-t border-border-luxe/10">
-                    <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 1} className="p-2 rounded-xl disabled:opacity-30 hover:bg-layer-luxe transition-colors">
+                    <button 
+                      onClick={() => handlePageChange(pagination.page - 1)} 
+                      disabled={pagination.page === 1} 
+                      className="p-2 rounded-xl disabled:opacity-30 hover:bg-layer-luxe transition-colors min-w-[40px] sm:min-w-[44px] h-10 sm:h-12"
+                    >
                       <ChevronLeft size={20} />
                     </button>
                     <div className="flex gap-1">
@@ -166,13 +169,25 @@ const Products = () => {
                         const pageNum = i + 1;
                         const isActive = pageNum === pagination.page;
                         return (
-                          <button key={pageNum} onClick={() => handlePageChange(pageNum)} className={`w-8 h-8 md:w-10 md:h-10 rounded-xl text-xs md:text-sm font-mono font-bold transition-all ${isActive ? 'bg-primary-luxe text-white shadow-md' : 'hover:bg-layer-luxe text-text-luxe/60'}`}>
+                          <button 
+                            key={pageNum} 
+                            onClick={() => handlePageChange(pageNum)} 
+                            className={`w-8 h-8 md:w-10 md:h-10 rounded-xl text-xs md:text-sm font-mono font-bold transition-all min-w-[32px] sm:min-w-[36px] ${
+                              isActive 
+                                ? 'bg-primary-luxe text-white shadow-md' 
+                                : 'hover:bg-layer-luxe text-text-luxe/60'
+                            }`}
+                          >
                             {pageNum}
                           </button>
                         );
                       })}
                     </div>
-                    <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page === pagination.pages} className="p-2 rounded-xl disabled:opacity-30 hover:bg-layer-luxe transition-colors">
+                    <button 
+                      onClick={() => handlePageChange(pagination.page + 1)} 
+                      disabled={pagination.page === pagination.pages} 
+                      className="p-2 rounded-xl disabled:opacity-30 hover:bg-layer-luxe transition-colors min-w-[40px] sm:min-w-[44px] h-10 sm:h-12"
+                    >
                       <ChevronRight size={20} />
                     </button>
                   </div>
@@ -183,7 +198,7 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Mobile Filter Drawer */}
+      {/* Mobile Filter Drawer – with horizontally scrollable content */}
       <AnimatePresence>
         {showFilters && (
           <motion.div
@@ -198,29 +213,50 @@ const Products = () => {
               <button onClick={() => setShowFilters(false)} className="p-3 bg-layer-luxe rounded-full"><X size={24} /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              {/* Categories – horizontally scrollable on mobile */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Categories</h4>
-                <div className="flex flex-wrap gap-3">
-                  {categories.map(cat => (
-                    <button key={cat} onClick={() => { handleCategoryChange(cat); setShowFilters(false); }} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-primary-luxe text-white shadow-md' : 'bg-layer-luxe text-text-luxe/80'}`}>
-                      {cat}
-                    </button>
-                  ))}
+                <div className="overflow-x-auto pb-2 -mx-2 px-2">
+                  <div className="flex gap-3 min-w-max">
+                    {categories.map(cat => (
+                      <button 
+                        key={cat} 
+                        onClick={() => { handleCategoryChange(cat); setShowFilters(false); }} 
+                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                          activeCategory === cat 
+                            ? 'bg-primary-luxe text-white shadow-md' 
+                            : 'bg-layer-luxe text-text-luxe/80'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+              {/* Sort – horizontally scrollable on mobile */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Sort By</h4>
-                <div className="flex flex-wrap gap-3">
-                  {sorts.map(sort => (
-                    <button key={sort} onClick={() => { handleSortChange(sort); setShowFilters(false); }} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${sortBy === sort ? 'bg-primary-luxe text-white shadow-md' : 'bg-layer-luxe text-text-luxe/80'}`}>
-                      {sort}
-                    </button>
-                  ))}
+                <div className="overflow-x-auto pb-2 -mx-2 px-2">
+                  <div className="flex gap-3 min-w-max">
+                    {sorts.map(sort => (
+                      <button 
+                        key={sort} 
+                        onClick={() => { handleSortChange(sort); setShowFilters(false); }} 
+                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                          sortBy === sort 
+                            ? 'bg-primary-luxe text-white shadow-md' 
+                            : 'bg-layer-luxe text-text-luxe/80'
+                        }`}
+                      >
+                        {sort}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
             <div className="p-6 border-t border-border-luxe/10">
-              {/* Reset button – brand color applied */}
               <button 
                 onClick={clearFilters} 
                 className="w-full py-4 bg-[#8B5E3C] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-all"
