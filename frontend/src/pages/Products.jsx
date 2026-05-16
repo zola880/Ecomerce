@@ -1,10 +1,48 @@
+// Products.jsx
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, Grid2X2, List, ChevronDown, Check, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { productAPI } from '../services/api';
 import ProductCard from '../components/ProductCard';
-import { ProductSkeleton } from '../components/ui/Skeleton';
+
+// ─────────────────────────────────────────────────────────────
+// 🔹 Skeleton Loader for Products (luxury style, animated pulse)
+// ─────────────────────────────────────────────────────────────
+const ProductSkeleton = () => {
+  return (
+    <div className="flex flex-col h-full animate-pulse">
+      {/* Image skeleton - matches responsive aspect ratio of real ProductCard */}
+      <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl bg-gray-100 aspect-[4/5] sm:aspect-[3/4]">
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 shimmer" />
+      </div>
+      {/* Text skeleton */}
+      <div className="py-2 sm:py-4 md:py-6 space-y-1 sm:space-y-2 px-1 sm:px-2">
+        <div className="flex justify-between items-start gap-1">
+          <div className="space-y-1 flex-1">
+            <div className="h-2 w-16 bg-gray-200 rounded-full hidden sm:block" />
+            <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4" />
+          </div>
+          <div className="h-3 sm:h-5 w-12 bg-gray-200 rounded" />
+        </div>
+        <div className="hidden sm:flex items-center justify-between pt-1 sm:pt-2">
+          <div className="h-1.5 w-12 bg-gray-200 rounded" />
+          <div className="h-1 w-8 bg-gray-200 rounded" />
+        </div>
+      </div>
+      <style jsx>{`
+        .shimmer {
+          animation: shimmer 1.5s infinite linear;
+          background-size: 200% 100%;
+        }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,10 +118,10 @@ const Products = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-24 md:pb-40">
+    <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 md:py-12 pb-24 md:pb-40">
       <div className="space-y-8 md:space-y-12">
-        {/* Header – unchanged */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border-luxe/10 pb-8 md:pb-12">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border-luxe/10 pb-6 md:pb-12">
           <div className="space-y-2 md:space-y-4">
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-secondary-luxe">Curated Archives</span>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-display leading-none">The <span className="italic">Collection</span></h1>
@@ -111,7 +149,7 @@ const Products = () => {
         </div>
 
         <div className="flex gap-6 lg:gap-16">
-          {/* Desktop Sidebar – unchanged */}
+          {/* Desktop Sidebar */}
           <motion.aside
             initial={false}
             animate={{ width: showFilters ? 280 : 0, opacity: showFilters ? 1 : 0 }}
@@ -181,7 +219,7 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Mobile Filter Drawer – fully solid, no transparency */}
+      {/* Mobile Filter Drawer */}
       <AnimatePresence>
         {showFilters && (
           <motion.div
@@ -196,7 +234,6 @@ const Products = () => {
               <button onClick={() => setShowFilters(false)} className="p-3 bg-gray-100 rounded-full"><X size={24} /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
-              {/* Categories – horizontally scrollable on mobile */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Categories</h4>
                 <div className="overflow-x-auto pb-2 -mx-2 px-2">
@@ -217,7 +254,6 @@ const Products = () => {
                   </div>
                 </div>
               </div>
-              {/* Sort – horizontally scrollable on mobile */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Sort By</h4>
                 <div className="overflow-x-auto pb-2 -mx-2 px-2">

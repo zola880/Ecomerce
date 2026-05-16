@@ -230,11 +230,22 @@ const Navbar = () => {
 
   return (
     <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'premium-blur shadow-md' : 'premium-blur'}`}>
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 
+        🔹 CRITICAL UPDATE FOR MOBILE EDGE-TO-EDGE BEHAVIOR:
+        - Removed all horizontal padding on mobile (px-0) so background touches left/right edges.
+        - On tablet/desktop, padding returns to normal (sm:px-6 lg:px-8).
+        - Logo gets left margin on mobile (ml-3 sm:ml-0) to prevent touch targets from sticking to edge.
+        - Right-side icon group gets right margin on mobile (mr-3 sm:mr-0) for same reason.
+        - Navbar now stays flush with screen edges regardless of zoom or viewport width.
+      */}
+      <div className="max-w-[1600px] mx-auto px-0 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
           
-          {/* Logo – always visible */}
-          <Link to="/" className="font-display text-xl sm:text-2xl font-bold tracking-tighter text-primary-luxe uppercase focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 rounded-lg p-1">
+          {/* Logo – with left margin on mobile to create safe touch area while keeping background edge-to-edge */}
+          <Link 
+            to="/" 
+            className="ml-3 sm:ml-0 font-display text-xl sm:text-2xl font-bold tracking-tighter text-primary-luxe uppercase focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 rounded-lg p-1"
+          >
             Aura<span className="text-secondary-luxe"> Luxe</span>
           </Link>
 
@@ -258,8 +269,11 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right Side Utility Icons (always visible) */}
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          {/* 
+            Right Side Utility Icons – with right margin on mobile to prevent touching edge.
+            Maintains edge-to-edge background while keeping icons accessible.
+          */}
+          <div className="flex items-center space-x-1 sm:space-x-2 mr-3 sm:mr-0">
             <NavIcon icon={Search} label="Search" onClick={() => setIsSearchOpen(!isSearchOpen)} />
             <NavIcon icon={Heart} label="Wishlist" href="/wishlist" badge={wishlist.length > 0 ? 1 : undefined} />
             <NavIcon icon={ShoppingBag} label="Cart" href="/cart" badge={cart.length} />
