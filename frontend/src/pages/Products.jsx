@@ -13,21 +13,21 @@ const ProductSkeleton = () => {
   return (
     <div className="flex flex-col h-full animate-pulse">
       {/* Image skeleton - matches responsive aspect ratio of real ProductCard */}
-      <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl bg-gray-100 aspect-[4/5] sm:aspect-[3/4]">
+      <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl bg-gray-100 aspect-square sm:aspect-[3/4]">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 shimmer" />
       </div>
       {/* Text skeleton */}
-      <div className="py-2 sm:py-4 md:py-6 space-y-1 sm:space-y-2 px-1 sm:px-2">
+      <div className="py-1 sm:py-4 md:py-6 space-y-0.5 sm:space-y-1.5 md:space-y-2 px-0.5 sm:px-2">
         <div className="flex justify-between items-start gap-1">
-          <div className="space-y-1 flex-1">
-            <div className="h-2 w-16 bg-gray-200 rounded-full hidden sm:block" />
-            <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4" />
+          <div className="space-y-0.5 flex-1">
+            <div className="hidden sm:block h-1.5 w-12 bg-gray-200 rounded-full" />
+            <div className="h-2 sm:h-3 md:h-4 bg-gray-200 rounded w-3/4" />
           </div>
-          <div className="h-3 sm:h-5 w-12 bg-gray-200 rounded" />
+          <div className="h-2 sm:h-3 md:h-5 w-10 bg-gray-200 rounded" />
         </div>
-        <div className="hidden sm:flex items-center justify-between pt-1 sm:pt-2">
-          <div className="h-1.5 w-12 bg-gray-200 rounded" />
+        <div className="hidden sm:flex items-center justify-between pt-0.5 sm:pt-2">
           <div className="h-1 w-8 bg-gray-200 rounded" />
+          <div className="h-0.5 w-6 bg-gray-200 rounded" />
         </div>
       </div>
       <style jsx>{`
@@ -118,37 +118,37 @@ const Products = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 md:py-12 pb-24 md:pb-40">
-      <div className="space-y-8 md:space-y-12">
+    <div className="max-w-[1600px] mx-auto px-2 sm:px-6 lg:px-8 py-4 md:py-12 pb-20 md:pb-40">
+      <div className="space-y-6 md:space-y-12">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border-luxe/10 pb-6 md:pb-12">
-          <div className="space-y-2 md:space-y-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-secondary-luxe">Curated Archives</span>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display leading-none">The <span className="italic">Collection</span></h1>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border-luxe/10 pb-4 md:pb-12">
+          <div className="space-y-1 md:space-y-4">
+            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-secondary-luxe">Curated Archives</span>
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-display leading-none">The <span className="italic">Collection</span></h1>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex items-center space-x-2 bg-layer-luxe p-1.5 rounded-2xl">
-              <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-secondary-luxe text-white' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
-                <Grid2X2 size={18} />
+          <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-1 bg-layer-luxe p-1 rounded-xl">
+              <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-secondary-luxe text-white' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
+                <Grid2X2 size={16} />
               </button>
-              <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-secondary-luxe text-white' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
-                <List size={18} />
+              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-secondary-luxe text-white' : 'text-text-luxe/30 hover:text-text-luxe'}`}>
+                <List size={16} />
               </button>
             </div>
             <button 
               onClick={() => setShowFilters(!showFilters)} 
-              className={`flex items-center space-x-2 px-5 py-3 md:px-8 md:py-4 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+              className={`flex items-center space-x-2 px-3 py-2 sm:px-5 sm:py-3 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all ${
                 showFilters 
                   ? 'bg-[#8B5E3C] text-white' 
                   : 'bg-[#8B5E3C] text-white hover:bg-[#6F472C]'
               }`}
             >
-              <SlidersHorizontal size={14} /><span>Filter</span>
+              <SlidersHorizontal size={12} /><span>Filter</span>
             </button>
           </div>
         </div>
 
-        <div className="flex gap-6 lg:gap-16">
+        <div className="flex gap-4 lg:gap-16">
           {/* Desktop Sidebar */}
           <motion.aside
             initial={false}
@@ -183,33 +183,33 @@ const Products = () => {
           {/* Product Grid */}
           <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
                 {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
               </div>
             ) : (
               <>
-                <div className={`grid gap-3 sm:gap-4 md:gap-6 lg:gap-8 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                <div className={`grid gap-2 sm:gap-4 md:gap-6 lg:gap-8 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
                   {products.map(product => <ProductCard key={product._id} product={product} />)}
                 </div>
 
                 {pagination.pages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-12 md:mt-16 pt-8 border-t border-border-luxe/10">
-                    <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 1} className="p-2 rounded-xl disabled:opacity-30 hover:bg-layer-luxe transition-colors min-w-[40px] sm:min-w-[44px] h-10 sm:h-12">
-                      <ChevronLeft size={20} />
+                  <div className="flex justify-center items-center gap-2 mt-10 md:mt-16 pt-6 border-t border-border-luxe/10">
+                    <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 1} className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-layer-luxe transition-colors min-w-[36px] sm:min-w-[44px] h-8 sm:h-12">
+                      <ChevronLeft size={18} />
                     </button>
                     <div className="flex gap-1">
                       {[...Array(pagination.pages)].map((_, i) => {
                         const pageNum = i + 1;
                         const isActive = pageNum === pagination.page;
                         return (
-                          <button key={pageNum} onClick={() => handlePageChange(pageNum)} className={`w-8 h-8 md:w-10 md:h-10 rounded-xl text-xs md:text-sm font-mono font-bold transition-all min-w-[32px] sm:min-w-[36px] ${isActive ? 'bg-primary-luxe text-white shadow-md' : 'hover:bg-layer-luxe text-text-luxe/60'}`}>
+                          <button key={pageNum} onClick={() => handlePageChange(pageNum)} className={`w-7 h-7 md:w-10 md:h-10 rounded-lg text-[11px] md:text-sm font-mono font-bold transition-all min-w-[28px] sm:min-w-[36px] ${isActive ? 'bg-primary-luxe text-white shadow-md' : 'hover:bg-layer-luxe text-text-luxe/60'}`}>
                             {pageNum}
                           </button>
                         );
                       })}
                     </div>
-                    <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page === pagination.pages} className="p-2 rounded-xl disabled:opacity-30 hover:bg-layer-luxe transition-colors min-w-[40px] sm:min-w-[44px] h-10 sm:h-12">
-                      <ChevronRight size={20} />
+                    <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page === pagination.pages} className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-layer-luxe transition-colors min-w-[36px] sm:min-w-[44px] h-8 sm:h-12">
+                      <ChevronRight size={18} />
                     </button>
                   </div>
                 )}
@@ -229,20 +229,20 @@ const Products = () => {
             transition={{ type: 'tween', duration: 0.3 }}
             className="fixed inset-0 z-[100] bg-white flex flex-col lg:hidden"
           >
-            <div className="flex justify-between items-center p-6 border-b border-gray-100">
-              <h3 className="text-2xl font-display uppercase tracking-tight">Filter & Sort</h3>
-              <button onClick={() => setShowFilters(false)} className="p-3 bg-gray-100 rounded-full"><X size={24} /></button>
+            <div className="flex justify-between items-center p-5 border-b border-gray-100">
+              <h3 className="text-xl font-display uppercase tracking-tight">Filter & Sort</h3>
+              <button onClick={() => setShowFilters(false)} className="p-2 bg-gray-100 rounded-full"><X size={20} /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Categories</h4>
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              <div className="space-y-3">
+                <h4 className="text-[9px] font-bold uppercase tracking-widest text-secondary-luxe">Categories</h4>
                 <div className="overflow-x-auto pb-2 -mx-2 px-2">
-                  <div className="flex gap-3 min-w-max">
+                  <div className="flex gap-2 min-w-max">
                     {categories.map(cat => (
                       <button 
                         key={cat} 
                         onClick={() => { handleCategoryChange(cat); setShowFilters(false); }} 
-                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
                           activeCategory === cat 
                             ? 'bg-[#8B5E3C] text-white shadow-md' 
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -254,15 +254,15 @@ const Products = () => {
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-secondary-luxe">Sort By</h4>
+              <div className="space-y-3">
+                <h4 className="text-[9px] font-bold uppercase tracking-widest text-secondary-luxe">Sort By</h4>
                 <div className="overflow-x-auto pb-2 -mx-2 px-2">
-                  <div className="flex gap-3 min-w-max">
+                  <div className="flex gap-2 min-w-max">
                     {sorts.map(sort => (
                       <button 
                         key={sort} 
                         onClick={() => { handleSortChange(sort); setShowFilters(false); }} 
-                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
                           sortBy === sort 
                             ? 'bg-[#8B5E3C] text-white shadow-md' 
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -275,10 +275,10 @@ const Products = () => {
                 </div>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-100">
+            <div className="p-5 border-t border-gray-100">
               <button 
                 onClick={clearFilters} 
-                className="w-full py-4 bg-[#8B5E3C] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-all"
+                className="w-full py-3 bg-[#8B5E3C] text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#6F472C] transition-all"
               >
                 Reset All Filters
               </button>

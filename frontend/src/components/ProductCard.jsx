@@ -48,35 +48,35 @@ const ProductCard = ({ product }) => {
       >
         {/* 
           🔹 Responsive aspect ratio: 
-          - On mobile (base): 4/5 (shorter, reduces card height)
+          - On mobile (base): square (1:1) - much shorter, matches screenshot
           - On sm and up: 3/4 (taller, original proportion)
         */}
-        <div className="aspect-[4/5] sm:aspect-[3/4]">
+        <div className="aspect-square sm:aspect-[3/4]">
           {/* Badges – smaller on mobile */}
           <div className="absolute top-1 left-1 sm:top-3 sm:left-3 md:top-5 md:left-5 z-10 flex flex-col gap-0.5 sm:gap-1 md:gap-2">
             {product.isNew && (
-              <div className="bg-white/90 backdrop-blur text-primary-luxe text-[7px] sm:text-[8px] md:text-[9px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.25em] px-1.5 py-0.5 sm:px-2 sm:py-0.5 md:px-3 md:py-1 rounded-full shadow-sm flex items-center space-x-0.5">
-                <Sparkles size={6} className="text-secondary-luxe sm:w-1.5 sm:h-1.5 md:w-2 md:h-2" />
+              <div className="bg-white/90 backdrop-blur text-primary-luxe text-[6px] sm:text-[8px] md:text-[9px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.2em] md:tracking-[0.25em] px-1 py-0.5 sm:px-2 sm:py-0.5 md:px-3 md:py-1 rounded-full shadow-sm flex items-center space-x-0.5">
+                <Sparkles className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-secondary-luxe" />
                 <span className="whitespace-nowrap">New</span>
               </div>
             )}
             {product.isSale && (
-              <div className="bg-secondary-luxe text-white text-[7px] sm:text-[8px] md:text-[9px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.25em] px-1.5 py-0.5 sm:px-2 sm:py-0.5 md:px-3 md:py-1 rounded-full shadow-sm">
+              <div className="bg-secondary-luxe text-white text-[6px] sm:text-[8px] md:text-[9px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.2em] md:tracking-[0.25em] px-1 py-0.5 sm:px-2 sm:py-0.5 md:px-3 md:py-1 rounded-full shadow-sm">
                 <span className="whitespace-nowrap">Sale</span>
               </div>
             )}
           </div>
 
-          {/* Action buttons – always visible on mobile */}
-          <div className="absolute inset-x-0 bottom-1 sm:bottom-3 md:bottom-6 z-10 flex justify-center items-center gap-1.5 sm:gap-2 md:gap-3 opacity-0 sm:opacity-0 translate-y-1 sm:translate-y-2 md:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 max-sm:opacity-100 max-sm:translate-y-0">
-            <button onClick={handleAddToCart} className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 bg-[#8B5E3C] text-white rounded-full flex items-center justify-center hover:bg-[#6F472C] transition-all shadow-md hover:scale-105 active:scale-95">
-              <ShoppingBag size={12} className="sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" />
+          {/* Action buttons – always visible on mobile, compact size */}
+          <div className="absolute inset-x-0 bottom-0.5 sm:bottom-3 md:bottom-6 z-10 flex justify-center items-center gap-1 sm:gap-2 md:gap-3 opacity-0 sm:opacity-0 translate-y-1 sm:translate-y-2 md:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 max-sm:opacity-100 max-sm:translate-y-0">
+            <button onClick={handleAddToCart} className="w-5 h-5 sm:w-8 sm:h-8 md:w-12 md:h-12 bg-[#8B5E3C] text-white rounded-full flex items-center justify-center hover:bg-[#6F472C] transition-all shadow-md hover:scale-105 active:scale-95">
+              <ShoppingBag className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" />
             </button>
-            <button onClick={handleWishlist} className={`w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all shadow-md hover:scale-105 active:scale-95 ${isInWishlist ? 'bg-[#8B5E3C] text-white' : 'bg-[#8B5E3C] text-white hover:bg-[#6F472C]'}`}>
-              <Heart size={12} className="sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" fill={isInWishlist ? "currentColor" : "none"} />
+            <button onClick={handleWishlist} className={`w-5 h-5 sm:w-8 sm:h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all shadow-md hover:scale-105 active:scale-95 ${isInWishlist ? 'bg-[#8B5E3C] text-white' : 'bg-[#8B5E3C] text-white hover:bg-[#6F472C]'}`}>
+              <Heart className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" fill={isInWishlist ? "currentColor" : "none"} />
             </button>
-            <Link to={`/product/${productId}`} className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/20 transition-all hover:bg-white hover:text-[#8B5E3C]">
-              <Eye size={12} className="sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" />
+            <Link to={`/product/${productId}`} className="w-5 h-5 sm:w-8 sm:h-8 md:w-12 md:h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/20 transition-all hover:bg-white hover:text-[#8B5E3C]">
+              <Eye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-5 md:h-5" />
             </Link>
           </div>
 
@@ -91,14 +91,14 @@ const ProductCard = ({ product }) => {
       </Link>
 
       {/* Text section – compact on mobile */}
-      <div className="py-2 sm:py-4 md:py-6 space-y-0.5 sm:space-y-1.5 md:space-y-2 px-1 sm:px-2">
+      <div className="py-1 sm:py-4 md:py-6 space-y-0.5 sm:space-y-1.5 md:space-y-2 px-0.5 sm:px-2">
         <div className="flex justify-between items-start gap-1">
-          <div className="space-y-0 flex-1 mr-2">
+          <div className="space-y-0 flex-1 mr-1">
             <p className="hidden sm:block text-[7px] sm:text-[8px] md:text-[9px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.25em] text-text-luxe/40">
               {product.category}
             </p>
-            {/* Title with 2-line clamp and word breaking to prevent cropping */}
-            <h3 className="text-[11px] sm:text-sm md:text-lg font-display uppercase tracking-tight text-primary-luxe group-hover:text-secondary-luxe transition-colors line-clamp-2 break-words">
+            {/* Title with 2-line clamp and word breaking - smaller on mobile */}
+            <h3 className="text-[10px] sm:text-sm md:text-lg font-display uppercase tracking-tight text-primary-luxe group-hover:text-secondary-luxe transition-colors line-clamp-2 break-words">
               {product.name}
             </h3>
           </div>
@@ -108,7 +108,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Stock & protocol – hidden on mobile */}
-        <div className="hidden sm:flex items-center justify-between pt-1 sm:pt-2 border-t border-border-luxe/10">
+        <div className="hidden sm:flex items-center justify-between pt-0.5 sm:pt-2 border-t border-border-luxe/10">
           <div className="flex items-center space-x-1 opacity-40">
             <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-secondary-luxe"></div>
             <span className="text-[6px] sm:text-[7px] md:text-[8px] font-bold uppercase tracking-widest">
