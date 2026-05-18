@@ -355,7 +355,40 @@
     }
 
     .page-wrapper {
-      padding-inline: 40px;
-    }
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+
+  /* LEFT & RIGHT PADDING */
+  padding-left: 18px;
+  padding-right: 18px;
+
+  padding-top: 22px;
+  padding-bottom: 100px;
+}
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .page-wrapper {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+/* TABLET */
+@media (min-width: 768px) {
+  .page-wrapper {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* DESKTOP */
+@media (min-width: 1200px) {
+  .page-wrapper {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
   }
 }
