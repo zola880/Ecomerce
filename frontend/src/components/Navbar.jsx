@@ -155,7 +155,7 @@ const UserDropdown = memo(({ user, getUserInitials, onLogout }) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 🔹 Main Navbar Component – Sticky top on all devices
+// 🔹 Main Navbar Component – FIXED at top on all devices
 // ─────────────────────────────────────────────────────────────
 const Navbar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -229,7 +229,7 @@ const Navbar = () => {
   const curatedResults = ['New Arrivals', 'Clearance Archive', 'Best Sellers'];
 
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'premium-blur shadow-md' : 'premium-blur'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 ${isScrolled ? 'premium-blur shadow-md' : 'premium-blur'}`}>
       {/* 
         🔹 CRITICAL UPDATE FOR MOBILE EDGE-TO-EDGE BEHAVIOR:
         - Removed all horizontal padding on mobile (px-0) so background touches left/right edges.
