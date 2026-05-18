@@ -9,41 +9,63 @@
     --layer: #ffffff;
     --text: #1c1c1c;
     --border: #e2e2e2;
+    --navbar-height: 64px;            /* Adjust to match your actual navbar height */
   }
 
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
+  }
+
+  /* Prevent horizontal overflow & zoom issues on all devices */
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 
   body {
     background-color: var(--bg);
     color: var(--text);
     font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
+    /* Push content down so it doesn't hide behind the fixed navbar */
+    padding-top: var(--navbar-height);
     width: 100%;
+    margin: 0;
   }
 
   .font-display {
     font-family: 'Playfair Display', serif;
   }
 
+  /* ---- Fixed navbar - no matter the page state ---- */
   .premium-blur {
-    backdrop-filter: blur(12px);
-    background-color: rgba(250, 249, 247, 0.95);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: var(--navbar-height);
+    display: flex;
+    align-items: center;
+
+    /* Visual style (merged both of your definitions) */
+    backdrop-filter: blur(20px);
+    background-color: rgba(250, 249, 247, 0.9);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s;
   }
 
-  @media (max-width: 768px) {
-    .premium-blur {
-      backdrop-filter: blur(8px);
-      background-color: rgba(250, 249, 247, 0.98);
-    }
+  /* Add a subtle shadow when the page has been scrolled (class added via JS) */
+  .premium-blur.scrolled {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
   }
 
+  /* Cards with responsive border-radius */
   .card-luxe {
     background-color: var(--layer);
-    border-radius: 1rem;      /* smaller default (mobile) */
+    border-radius: 1rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
     transition: all 0.3s ease;
   }
@@ -58,19 +80,27 @@
     }
   }
 
+  /* Inputs – prevent iOS zoom by ensuring font-size >= 16px on mobile */
   .input-luxe {
     background-color: var(--layer);
     border: 1px solid var(--border);
     border-radius: 1rem;
     padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    font-size: 1rem;                /* 16px base – stops zoom on focus */
     outline: none;
     transition: border-color 0.2s;
     width: 100%;
   }
+  @media (max-width: 640px) {
+    .input-luxe {
+      font-size: 1rem;              /* Explicitly 16px on small screens */
+      padding: 0.75rem 1rem;
+    }
+  }
   @media (min-width: 768px) {
     .input-luxe {
       padding: 1rem 1.5rem;
+      font-size: 0.875rem;          /* Can be smaller on larger screens */
     }
   }
   .input-luxe:focus {
@@ -84,38 +114,32 @@
     overflow: hidden;
   }
 
-  img {
+  img, video, canvas, svg {
     max-width: 100%;
     height: auto;
   }
 
-  html {
-    scroll-behavior: smooth;
+  /* Remove default focus outlines only when using keyboard */
+  :focus-visible {
+    outline: none;
   }
 }
 
-/* Additional overrides for better mobile spacing */
+/* Additional mobile‑first overrides */
 @media (max-width: 640px) {
-  .max-w-7xl, .max-w-[1600px] {
+  .max-w-7xl, .max-w-\[1600px\] {
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
   }
+
+  /* Keep touch targets large enough */
+  a, button, .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
-.premium-blur {
-  background-color: rgba(250, 249, 247, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(226, 226, 226, 0.1);
-}
-
+/* Support devices with safe‑area insets (iPhone X and newer) */
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 1rem);
-}
-
-:focus-visible {
-  outline: none;
-}
-
-nav.sticky.scrolled {
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
 }
